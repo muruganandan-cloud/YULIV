@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>YuLiv Pharmacy</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css' , q=9) }}">
+    <meta name="description" content="YuLiv Pharmacy - Your trusted local pharmacy for medicines, health products, and wellness advice. Visit Yuliv.in for all your medical needs.">
+    <meta name="keywords" content="YuLiv, Pharmacy, Medicine, Medicals, Ayurvedic Medicine, Chemist, Health, Wellness, Buy Medicine Online">
+    <meta name="google-site-verification" content="-oB8uBukyzJKphSH81mqAarQ97SjqI0K7mCqRpfpn1A" />
+    <!-- <style>
+        body { margin: 0; padding: 0; display: block; font-family: 'Segoe UI', sans-serif; background-color: #f5d7d7; }
+        
+        /* CLEANED HEADER BACKBONE */
+        header { 
+            background-color: #ffffff; /* Shifted to clean white for luxury look */
+            width: 100%; 
+            border-bottom: 1px solid #ddd;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        }
+        
+        .header-container { 
+            max-width: 1400px; /* Expanded limit to handle all tools neatly */
+            width: 100%;
+            margin: 0 auto; 
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between; 
+            align-items: center; 
+            box-sizing: border-box;
+        }
+        
+        /* LEFT: Logo Area */
+        .logo-area { 
+            display: flex; 
+            align-items: center; 
+            flex-shrink: 0;
+        }
+        .logo-link { display: flex; align-items: center; text-decoration: none; }
+        
+        /* Logo Pop Animation */
+        @keyframes logoPop {
+            0% { transform: scale(0.8); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .logo { 
+            width: 150px; /* Tuned size down slightly for elegant header balance */
+            height: auto; 
+            animation: logoPop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: transform 0.3s ease;
+        }
+        .logo:hover { transform: scale(1.05); }
+
+        /* CENTER: Expanded Search Bar */
+        .search-form { 
+            display: flex; 
+            flex-grow: 1; 
+            max-width: 550px; /* Increased width bounds */
+            margin: 0 40px; /* Roomy padding buffers */
+        }
+        .search-input { 
+            padding: 12px 20px; 
+            width: 100%; 
+            border: 1px solid #ddd; 
+            border-radius: 25px 0 0 25px; /* Clean rounded curves */
+            outline: none;
+            font-size: 15px; 
+        }
+        .search-input:focus { border-color: #0d9488; }
+        .search-button { 
+            padding: 12px 25px; 
+            border: none; 
+            background-color: #0d9488; 
+            color: white; 
+            border-radius: 0 25px 25px 0; /* Matching curve edge */
+            cursor: pointer; 
+            font-weight: 600;
+            white-space: nowrap;
+            transition: background-color 0.2s ease;
+        }
+        .search-button:hover { background-color: #0f766e; } 
+
+        /* RIGHT: Navigation Menu Links */
+        nav { 
+            margin-left: 0; 
+            flex-shrink: 0;
+        }
+        nav ul { 
+            list-style: none; 
+            padding: 0; 
+            margin: 0; 
+            display: flex; 
+            align-items: center;
+            gap: 20px; 
+            font-size: 1.05rem; 
+        }
+        nav a { 
+            text-decoration: none; 
+            color: #4b5563; 
+            font-weight: 600; 
+            transition: color 0.2s ease;
+        }
+        nav a:hover { color: #0d9488; }
+        
+        /* Personalized Elements Layout */
+        .welcome-user {
+            color: #374151;
+            font-weight: 700;
+            font-size: 0.95rem;
+            background-color: #f3f4f6;
+            padding: 6px 12px;
+            border-radius: 15px;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        /* Dropdown Logic */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #ffffff;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            z-index: 1;
+            border: 1px solid #eee;
+            top: 100%;
+        }
+        /* Invisible bridge to close the gap between trigger and menu */
+        .dropdown-content::before {
+            content: "";
+            position: absolute;
+            top: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: transparent;
+        }
+        
+        .dropdown-content a {
+            color: #4b5563;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            font-size: 0.95rem;
+            text-align: left;
+        }
+        .dropdown-content a:hover { background-color: #f9fafb; color: #0d9488; }
+        .dropdown:hover .dropdown-content { display: block; }
+        
+        .cart-link {
+            background-color: #e6f4f2;
+            color: #0d9488;
+            padding: 8px 16px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .cart-link:hover {
+            background-color: #0d9488;
+            color: white;
+        }
+
+        .content { text-align: center; padding: 50px; }
+        h1, h2, h3 { color: #0d9488; margin: 0 0 15px 0; }
+    </style> -->
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <div class="logo-area">
+                <a href="/" class="logo-link">
+                    <img src="{{ url_for('static', filename='yulivinlogo_Vector.svg') }}" class="logo">
+                </a>    
+            </div>
+            
+            <!-- Added ID for JavaScript targeting -->
+            <div class="delivery-location" id="delivery-location-trigger">
+                <div class="loc-icon">📍</div>
+                <div class="loc-text">
+                    <span class="loc-line1">Delivering to Coimbatore 641046</span>
+                    <span class="loc-line2">Update location</span>
+                </div>
+            </div>
+
+            <form action="/search" method="GET" class="search-form">
+                <input type="text" name="q" placeholder=" Type Brand, Product of your search..." class="search-input" required>
+                <button type="submit" class="search-button">✨ AI Search</button>
+            </form>
+            
+            <nav class="main-nav">
+            <div class="user-actions">
+                {% if current_user.is_authenticated %}
+                    <div class="dropdown amz-nav-item">
+                        <div class="amz-nav-line1">Hello, {{ current_user.username }}</div>
+                        <div class="amz-nav-line2">Account & Lists ▾</div>
+                        <div class="dropdown-content">
+                            <div style="padding: 10px 20px; font-weight: bold; border-bottom: 1px solid #eee;">Your Account</div>
+                            <a href="{{ url_for('profile') }}">Your Profile</a>
+                            <a href="{{ url_for('orders') }}">Your Orders</a>
+                            <a href="{{ url_for('browsing_history') }}">Browsing History</a>
+                            <a href="{{ url_for('recommendations') }}">Your Recommendations</a>
+                            <hr style="border: 0; border-top: 1px solid #eee; margin: 0;">
+                            <a href="{{ url_for('logout') }}" style="color: #dc2626;">Sign Out</a>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('orders') }}" class="amz-nav-item">
+                        <div class="amz-nav-line1">Returns</div>
+                        <div class="amz-nav-line2">& Orders</div>
+                    </a>
+                    <a href="{{ url_for('view_cart') }}" class="amz-cart" title="Cart">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-badge">{{ cart_count }}</span>
+                        <span class="cart-text">Cart</span>
+                    </a>
+                {% else %}
+                    <div class="dropdown amz-nav-item">
+                        <div class="amz-nav-line1">Hello, sign in</div>
+                        <div class="amz-nav-line2">Account & Lists ▾</div>
+                        <div class="dropdown-content" style="min-width: 240px; padding: 15px; text-align: center;">
+                            <a href="{{ url_for('login') }}" class="amz-signin-btn">Sign in</a>
+                            <p style="font-size: 0.8rem; margin-top: 10px; color: #555;">New customer? <a href="{{ url_for('signup') }}" style="display:inline; padding:0; color:#007185; background:transparent;">Start here.</a></p>
+                        </div>
+                    </div>
+                    <a href="{{ url_for('login') }}" class="amz-nav-item">
+                        <div class="amz-nav-line1">Returns</div>
+                        <div class="amz-nav-line2">& Orders</div>
+                    </a>
+                    <a href="{{ url_for('login') }}" class="amz-cart" title="Cart">
+                        <span class="cart-icon">🛒</span>
+                        <span class="cart-badge">0</span>
+                        <span class="cart-text">Cart</span>
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+    </div>
+    
+    <!-- Sub-header (Dark Blue) -->
+    <div class="subheader-container" style="position: relative; display: flex; align-items: center;">
+        <a href="#" class="sub-menu-all">☰ All</a>
+        
+        <div class="sub-links-scroll" style="flex-grow: 1; padding-right: 180px;">
+            <a href="{{ url_for('shop_by_category', category_name='deals') }}">Today's Deals</a>
+            <a href="{{ url_for('orders') }}">Buy Again</a>
+            <a href="{{ url_for('shop_by_category', category_name='skincare') }}">Skincare</a>
+            <a href="{{ url_for('shop_by_category', category_name='wellness') }}">Wellness</a>
+            <a href="{{ url_for('shop_by_category', category_name='baby care') }}">Baby Care</a>
+            <a href="{{ url_for('browsing_history') }}">Browsing History</a>
+            <a href="{{ url_for('recommendations') }}">Recommendations</a>
+        </div>
+
+        {% if current_user.is_authenticated and current_user.is_admin %}
+            
+            <div class="admin-menu-wrapper" 
+                 style="position: absolute; right: 20px; top: 50%; transform: translateY(-50%); z-index: 1000;"
+                 onmouseenter="document.getElementById('admin-dropdown-box').style.display='block';"
+                 onmouseleave="document.getElementById('admin-dropdown-box').style.display='none';">
+                
+                <a href="#" style="color: #ff6f61; font-weight: bold; text-decoration: none; padding: 5px;">⚙️ Admin Portal ▾</a>
+                
+                <div id="admin-dropdown-box" style="display: none; position: absolute; top: 100%; right: 0; background-color: #ffffff; min-width: 220px; padding: 5px 0; border: 1px solid #eaeaea; box-shadow: 0px 8px 20px rgba(0,0,0,0.12); border-radius: 8px; z-index: 9999; margin-top: 12px;">
+                    
+                    <div style="position: absolute; top: -15px; left: 0; right: 0; height: 15px; background: transparent;"></div>
+                    
+                    <div style="padding: 12px 16px 8px; font-weight: bold; font-size: 0.8rem; color: #9ca3af; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #f3f4f6;">Management</div>
+                    
+                    <a href="{{ url_for('upload_inventory') }}" 
+                       style="display: block; padding: 12px 16px; color: #4b5563; text-decoration: none; font-size: 0.95rem; transition: 0.2s;"
+                       onmouseover="this.style.backgroundColor='#f9fafb'; this.style.color='#0d9488';"
+                       onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4b5563';">📦 Upload Inventory</a>
+                    
+                    <a href="#" 
+                       style="display: block; padding: 12px 16px; color: #4b5563; text-decoration: none; font-size: 0.95rem; transition: 0.2s;"
+                       onmouseover="this.style.backgroundColor='#f9fafb'; this.style.color='#0d9488';"
+                       onmouseout="this.style.backgroundColor='transparent'; this.style.color='#4b5563';">🔑 Reset Password</a>
+                </div>
+            </div>
+        {% endif %}
+    </div>
+</header>
+
+    <!-- Amazon-Style Sidebar Overlay -->
+    <div id="sidebar-overlay" class="sidebar-overlay"></div>
+
+    <!-- Amazon-Style Sidebar Menu -->
+    <div id="amazon-sidebar" class="amazon-sidebar">
+        <div class="sidebar-header">
+            <div style="display: flex; align-items: center;">
+                <span class="sidebar-user-icon">👤</span>
+                {% if current_user.is_authenticated %}
+                    <h3 style="margin:0; font-size: 1.2rem; color: white;">Hello, {{ current_user.username }}</h3>
+                {% else %}
+                    <h3 style="margin:0; font-size: 1.2rem; color: white;">Hello, sign in</h3>
+                {% endif %}
+            </div>
+            <button id="close-sidebar" class="close-sidebar">&times;</button>
+        </div>
+        
+        <div class="sidebar-content">
+            <div class="sidebar-section">
+                <h4>Trending & Account</h4>
+                <a href="{{ url_for('orders') }}">Your Orders & Returns</a>
+                <a href="{{ url_for('browsing_history') }}">Browsing History</a>
+                <a href="{{ url_for('recommendations') }}">Your Recommendations</a>
+                <a href="{{ url_for('profile') }}">Your Account</a>
+            </div>
+            <hr class="sidebar-divider">
+            <div class="sidebar-section">
+                <h4>Shop by Category</h4>
+                <a href="{{ url_for('shop_by_category', category_name='skincare') }}">Skin Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='self care') }}">Self Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='hair care') }}">Hair Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='body care') }}">Body Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='sun care') }}">Sun Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='wellness') }}">Wellness</a>
+                <a href="{{ url_for('shop_by_category', category_name='medicine') }}">Medicine</a>
+                <a href="{{ url_for('shop_by_category', category_name='home') }}">Home Essentials</a>
+                <a href="{{ url_for('shop_by_category', category_name='accessories') }}">Accessories</a>
+                <a href="{{ url_for('shop_by_category', category_name='men care') }}">Men's Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='women care') }}">Women's Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='baby care') }}">Baby Care</a>
+                <a href="{{ url_for('shop_by_category', category_name='kids care') }}">Kids Care</a>
+            </div>
+        </div>
+    </div>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div style="padding: 15px; background-color: #fca5a5; color: #b91c1c; text-align: center; font-weight: bold;">
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <!-- Location Modal -->
+    <div id="location-modal-overlay" class="modal-overlay">
+        <div id="location-modal-content" class="modal-content">
+            <button id="modal-close-btn" class="modal-close-btn">&times;</button>
+            {% if current_user.is_authenticated %}
+                <h4>Choose your location</h4>
+                {% if current_user.pincode %}
+                    <p>Your default location is <strong>{{ current_user.pincode }}</strong>.</p>
+                    <p>Enter a new Indian pincode for this order:</p>
+                {% else %}
+                     <p>Enter an Indian pincode to check for delivery options.</p>
+                {% endif %}
+                <form id="pincode-form">
+                    <input type="text" id="pincode-input" placeholder="Enter 6-digit Indian Pincode" maxlength="7" pattern="^[1-9][0-9]{5}$" title="Please enter a valid 6-digit Indian Pincode (cannot start with 0)" required>
+                    <button type="submit">Apply</button>
+                </form>
+            {% else %}
+                <h4>Choose your location</h4>
+                <p>Sign in to see your saved addresses or enter a new pincode.</p>
+                <a href="{{ url_for('login') }}" class="modal-login-btn">Sign in to retrieve address</a>
+                
+                <div class="modal-divider">
+                    <hr>
+                    <span>OR ENTER PINCODE</span>
+                    <hr>
+                </div>
+                
+                <form id="pincode-form">
+                    <input type="text" id="pincode-input" placeholder="Enter 6-digit Indian Pincode" maxlength="6" pattern="^[1-9][0-9]{5}$" title="Please enter a valid 6-digit Indian Pincode (cannot start with 0)" required>
+                    <button type="submit">Apply</button>
+                </form>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        // Location Modal Logic
+        const deliveryTrigger = document.getElementById('delivery-location-trigger');
+        const modalOverlay = document.getElementById('location-modal-overlay');
+        const modalCloseBtn = document.getElementById('modal-close-btn');
+        const pincodeForm = document.getElementById('pincode-form');
+        const pincodeInput = document.getElementById('pincode-input');
+        const locationDisplayText = document.querySelector('.delivery-location .loc-line1');
+
+        function showModal() { modalOverlay.style.display = 'flex'; }
+        function hideModal() { modalOverlay.style.display = 'none'; }
+
+        deliveryTrigger.addEventListener('click', showModal);
+        modalCloseBtn.addEventListener('click', hideModal);
+        modalOverlay.addEventListener('click', function(event) {
+            if (event.target === modalOverlay) { hideModal(); }
+        });
+
+        pincodeForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const newPincode = pincodeInput.value;
+            if (newPincode && newPincode.match(/^[1-9][0-9]{5}$/)) {
+                locationDisplayText.textContent = `Delivering to ${newPincode}`;
+                hideModal();
+            } else {
+                alert("Please enter a valid 6-digit Indian Pincode.");
+            }
+        });
+
+        // Amazon Sidebar Logic
+        const sidebar = document.getElementById('amazon-sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const openSidebarBtn = document.querySelector('.sub-menu-all');
+        const closeSidebarBtn = document.getElementById('close-sidebar');
+
+        function openSidebar(e) {
+            e.preventDefault();
+            sidebar.classList.add('open');
+            overlay.classList.add('active');
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        function closeSidebar() {
+            sidebar.classList.remove('open');
+            overlay.classList.remove('active');
+            document.body.style.overflow = 'auto'; // Restore background scrolling
+        }
+
+        if (openSidebarBtn) openSidebarBtn.addEventListener('click', openSidebar);
+        if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
+        if (overlay) overlay.addEventListener('click', closeSidebar);
+    </script>
+</body>
+</html>

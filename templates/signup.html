@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content">
+    <div style="background: white; padding: 40px; margin: 40px auto; max-width: 400px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <h2 style="color: #0d9488; margin-bottom: 20px;">Create Account</h2>
+        <form action="{{ url_for('signup') }}" method="POST">
+            <div style="margin-bottom: 15px; text-align: left;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Choose Username</label>
+                <input type="text" name="username" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            </div>
+            <div style="margin-bottom: 20px; text-align: left;">
+                <label style="display: block; margin-bottom: 5px; font-weight: 600;">Password</label>
+                <input type="password" name="password" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            </div>
+            <button type="submit" style="width: 100%; padding: 12px; background-color: #0d9488; color: white; border: none; border-radius: 5px; font-weight: 600; cursor: pointer;">Register</button>
+        </form>
+        <p style="margin-top: 20px; font-size: 0.9em; color: #666;">Already have an account? <a href="{{ url_for('login') }}" style="color: #0d9488; text-decoration: none; font-weight: bold;">Login here</a></p>
+    </div>
+</div>
+{% endblock %}

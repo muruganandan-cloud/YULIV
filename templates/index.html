@@ -1,0 +1,735 @@
+
+{% extends "base.html" %}
+{% block content %}
+<main class="content" style="padding: 0; background-color: #f8fafc;">
+    <!-- Layer 1: Modern Bento Box Promos -->
+    <section class="bento-section" style="padding: 40px 20px; background-color: #fff;">
+        <style>
+            .bento-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+                gap: 20px;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .bento-card {
+                position: relative;
+                border-radius: 24px;
+                padding: 30px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+                background-size: cover;
+                background-position: center;
+                color: #fff;
+                min-height: 280px;
+                display: flex;
+                flex-direction: column;
+                justify-content: flex-end;
+                cursor: pointer;
+            }
+            .bento-card:hover {
+                transform: translateY(-5px) scale(1.02);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.12);
+            }
+            .bento-card::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; right: 0; bottom: 0;
+                background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 100%);
+                z-index: 1;
+            }
+            .bento-content {
+                position: relative;
+                z-index: 2;
+            }
+            .bento-tag {
+                align-self: flex-start;
+                background: rgba(255,255,255,0.25);
+                backdrop-filter: blur(10px);
+                -webkit-backdrop-filter: blur(10px);
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 0.85rem;
+                font-weight: 700;
+                margin-bottom: auto;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                border: 1px solid rgba(255,255,255,0.3);
+            }
+            .bento-title {
+                font-size: 2rem;
+                font-weight: 800;
+                margin: 0 0 8px;
+                line-height: 1.1;
+                text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            }
+            .bento-desc {
+                font-size: 1rem;
+                opacity: 0.95;
+                margin-bottom: 20px;
+                text-shadow: 0 1px 5px rgba(0,0,0,0.5);
+            }
+            .bento-btn {
+                display: inline-block;
+                background: #fff;
+                color: #111;
+                padding: 12px 24px;
+                border-radius: 30px;
+                font-weight: 700;
+                text-decoration: none;
+                transition: all 0.3s ease;
+                align-self: flex-start;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            }
+            .bento-btn:hover {
+                background: #ff6600;
+                color: #fff;
+                transform: translateX(5px);
+            }
+            .card-large {
+                grid-column: span 2;
+            }
+            @media (max-width: 768px) {
+                .card-large { grid-column: span 1; }
+            }
+        </style>
+        <div class="bento-grid">
+            <div class="bento-card card-large track-click" data-category="trending skincare" style="background-image: url('https://images.unsplash.com/photo-1615715563344-9345eeae5ba0?auto=format&fit=crop&w=800&q=80');">
+                <span class="bento-tag">Trending 🔥</span>
+                <div class="bento-content">
+                    <h3 class="bento-title">Smart Wellness Routine</h3>
+                    <p class="bento-desc">Upgrade your skincare with Gen-Z favorite brands: Derma Co & Mamaearth.</p>
+                    <a href="/search?q=skincare" class="bento-btn">Explore Now</a>
+                </div>
+            </div>
+            <div class="bento-card track-click" data-category="vitamins" style="background-image: url('https://images.unsplash.com/photo-1550572017-edb799986326?auto=format&fit=crop&w=400&q=80');">
+                <span class="bento-tag">Immunity 💊</span>
+                <div class="bento-content">
+                    <h3 class="bento-title">Daily Boost</h3>
+                    <p class="bento-desc">Vitamins & essentials for your active lifestyle.</p>
+                    <a href="/search?q=vitamins" class="bento-btn">Shop Supplements</a>
+                </div>
+            </div>
+            <div class="bento-card track-click" data-category="self care" style="background-image: url('https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=400&q=80');">
+                <span class="bento-tag">Glow Up ✨</span>
+                <div class="bento-content">
+                    <h3 class="bento-title">Self Care</h3>
+                    <p class="bento-desc">Premium personal care items to pamper yourself.</p>
+                    <a href="/search?q=self care" class="bento-btn">Treat Yourself</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Layer 2: Special Offers Carousel (Glassmorphism) -->
+    <section class="carousel-section" style="background: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%); padding: 50px 20px;">
+        <style>
+            .glass-offer-card {
+                background: rgba(255, 255, 255, 0.5) !important;
+                backdrop-filter: blur(20px) !important;
+                -webkit-backdrop-filter: blur(20px) !important;
+                border: 1px solid rgba(255, 255, 255, 0.8) !important;
+                border-radius: 24px !important;
+                box-shadow: 0 10px 40px 0 rgba(31, 38, 135, 0.05) !important;
+                position: relative;
+                overflow: hidden;
+                color: #333 !important;
+                padding: 30px !important;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            }
+            .glass-offer-card:hover {
+                transform: translateY(-8px) scale(1.02) !important;
+            }
+            .glass-offer-card::before {
+                content: '';
+                position: absolute;
+                top: -50%; left: -50%; width: 200%; height: 200%;
+                background: radial-gradient(circle, rgba(255,102,0,0.1) 0%, transparent 60%);
+                z-index: 0;
+            }
+            .glass-content {
+                position: relative;
+                z-index: 2;
+            }
+            .glass-title {
+                font-size: 1.8rem !important;
+                font-weight: 800 !important;
+                background: linear-gradient(45deg, #ff6600, #ff007f);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                margin-bottom: 12px !important;
+            }
+            .glass-desc {
+                font-weight: 500 !important;
+                color: #555 !important;
+                margin-bottom: 25px !important;
+                font-size: 1.05rem !important;
+            }
+            .glass-btn {
+                background: #111 !important;
+                color: #fff !important;
+                border-radius: 12px !important;
+                font-weight: 700 !important;
+                padding: 12px 24px !important;
+                transition: background 0.3s ease, transform 0.2s !important;
+                box-shadow: 0 4px 15px rgba(0,0,0,0.1) !important;
+            }
+            .glass-btn:hover {
+                background: #ff6600 !important;
+                transform: translateY(-2px) !important;
+            }
+        </style>
+        <div class="carousel-header" style="max-width: 1400px; margin: 0 auto 30px;">
+            <h2 style="font-size: 2.2rem; font-weight: 800;">⚡ Drops & Steals</h2>
+            <div class="carousel-nav">
+                <button class="carousel-btn" style="box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="scrollCarousel('offers-carousel', -1)">&#10094;</button>
+                <button class="carousel-btn" style="box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="scrollCarousel('offers-carousel', 1)">&#10095;</button>
+            </div>
+        </div>
+        <div class="carousel-container" id="offers-carousel" style="padding-bottom: 20px; max-width: 1400px; margin: 0 auto;">
+            <div class="carousel-item offer-carousel-card glass-offer-card track-click" data-category="medicines">
+                <div class="glass-content">
+                    <h3 class="offer-title glass-title">FLAT 20% OFF</h3>
+                    <p class="offer-desc glass-desc">On prescription meds w/ code <strong>MED20</strong>.</p>
+                    <a href="/search?q=medicines" class="offer-btn glass-btn">Shop Now</a>
+                </div>
+            </div>
+            <div class="carousel-item offer-carousel-card glass-offer-card track-click" data-category="mamaearth">
+                <div class="glass-content">
+                    <h3 class="offer-title glass-title">BOGO SALE</h3>
+                    <p class="offer-desc glass-desc">Buy 1 Get 1 on Mamaearth skincare.</p>
+                    <a href="/search?q=mamaearth" class="offer-btn glass-btn">Explore</a>
+                </div>
+            </div>
+            <div class="carousel-item offer-carousel-card glass-offer-card track-click" data-category="vitamins">
+                <div class="glass-content">
+                    <h3 class="offer-title glass-title">VITAMINS 30%</h3>
+                    <p class="offer-desc glass-desc">Mega discounts on daily supplements.</p>
+                    <a href="/search?q=vitamins" class="offer-btn glass-btn">View Deals</a>
+                </div>
+            </div>
+            <div class="carousel-item offer-carousel-card glass-offer-card track-click" data-category="delivery">
+                <div class="glass-content">
+                    <h3 class="offer-title glass-title">FREE DELIV</h3>
+                    <p class="offer-desc glass-desc">On all orders above ₹500 across Coimbatore.</p>
+                    <a href="#" class="offer-btn glass-btn">Order Now</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Layer 3: Shop by Brand Carousel -->
+    <section class="carousel-section" style="background: #fff; padding-top: 50px; padding-bottom: 50px; border-top: 1px solid #eaeaea;">
+        <div class="carousel-header" style="max-width: 1400px; margin: 0 auto 30px; padding: 0 20px;">
+            <h2 style="font-size: 2.2rem; font-weight: 800;">Shop by Brand</h2>
+            <div class="carousel-nav">
+                <button class="carousel-btn" style="box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="scrollCarousel('brands-carousel', -1)">&#10094;</button>
+                <button class="carousel-btn" style="box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="scrollCarousel('brands-carousel', 1)">&#10095;</button>
+            </div>
+        </div>
+        <style>
+            .brand-carousel-container {
+                display: flex;
+                overflow-x: auto;
+                scroll-behavior: smooth;
+                gap: 25px;
+                padding: 15px 20px 25px;
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .brand-carousel-container::-webkit-scrollbar { display: none; }
+            .brand-card {
+                flex: 0 0 160px;
+                height: 100px;
+                background-color: #fff;
+                border-radius: 16px;
+                border: 1px solid #f0f0f0;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding: 15px;
+                box-sizing: border-box;
+                transition: transform 0.3s ease, box-shadow 0.3s ease;
+                cursor: pointer;
+            }
+            .brand-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 15px 30px rgba(0,0,0,0.08);
+            }
+            .brand-logo {
+                max-width: 100%;
+                max-height: 60px;
+                object-fit: contain;
+                /*filter: grayscale(100%);
+                opacity: 0.7;*/
+                transition: filter 0.3s, opacity 0.3s;
+            }
+            .brand-card:hover .brand-logo {
+                filter: grayscale(0%);
+                opacity: 1;
+            }
+        </style>
+        <div class="brand-carousel-container" id="brands-carousel">
+            <a href="/search?q=mamaearth" class="brand-card track-click" data-category="brand-mamaearth"><img src="{{ url_for('static', filename='brands/mamaearth.png') }}" alt="Mamaearth Logo" class="brand-logo"></a>
+            <a href="/search?q=dermaco" class="brand-card track-click" data-category="brand-dermaco"><img src="{{ url_for('static', filename='brands/dermaco.png') }}" alt="The Derma Co Logo" class="brand-logo"></a>
+            <a href="/search?q=bblunt" class="brand-card track-click" data-category="brand-bblunt"><img src="{{ url_for('static', filename='brands/bblunt.png') }}" alt="BBlunt Logo" class="brand-logo"></a>
+            <a href="/search?q=aqualogica" class="brand-card track-click" data-category="brand-aqualogica"><img src="{{ url_for('static', filename='brands/aqualogica.jpeg') }}" alt="Aqualogica Logo" class="brand-logo"></a>
+            <a href="/search?q=minimalist" class="brand-card track-click" data-category="brand-minimalist"><img src="{{ url_for('static', filename='brands/minimalist.png') }}" alt="Minimalist Logo" class="brand-logo"></a>
+            <a href="/search?q=bellavita" class="brand-card track-click" data-category="brand-bellavita"><img src="{{ url_for('static', filename='brands/bellavita.jpeg') }}" alt="Bella Vita Organic Logo" class="brand-logo"></a>
+            <a href="/search?q=cerave" class="brand-card track-click" data-category="brand-cerave"><img src="{{ url_for('static', filename='brands/cerave.png') }}" alt="CeraVe Logo" class="brand-logo"></a>
+            <a href="/search?q=wow" class="brand-card track-click" data-category="brand-wow"><img src="{{ url_for('static', filename='brands/wow.png') }}" alt="WOW Skin Science Logo" class="brand-logo"></a>
+            <a href="/search?q=plix" class="brand-card track-click" data-category="brand-plix"><img src="{{ url_for('static', filename='brands/plix.png') }}" alt="Plix Logo" class="brand-logo"></a>
+            <a href="/search?q=plum" class="brand-card track-click" data-category="brand-plum"><img src="{{ url_for('static', filename='brands/plum.png') }}" alt="Plum Goodness Logo" class="brand-logo"></a>
+        </div>
+    </section>
+
+    <!-- Layer 4: Category Selection Carousel -->
+    <section class="carousel-section" style="background: #fff; padding-top: 50px; padding-bottom: 50px; border-bottom: 1px solid #eaeaea;">
+        <div class="carousel-header" style="max-width: 1400px; margin: 0 auto 30px; padding: 0 20px;">
+            <h2 style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(45deg, #111, #ff6600); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Shop by Category 🎯</h2>
+            <div class="carousel-nav">
+                <button class="carousel-btn" style="box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="scrollCarousel('category-carousel', -1)">&#10094;</button>
+                <button class="carousel-btn" style="box-shadow: 0 4px 10px rgba(0,0,0,0.1);" onclick="scrollCarousel('category-carousel', 1)">&#10095;</button>
+            </div>
+        </div>
+        <style>
+            .category-carousel-container {
+                display: flex;
+                overflow-x: auto;
+                scroll-behavior: smooth;
+                gap: 30px;
+                padding: 15px 20px 40px;
+                -ms-overflow-style: none; /* IE and Edge */
+                scrollbar-width: none; /* Firefox */
+                max-width: 1400px;
+                margin: 0 auto;
+            }
+            .category-carousel-container::-webkit-scrollbar {
+                display: none; /* Chrome, Safari and Opera */
+            }
+            .category-round-item {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                min-width: 130px;
+                cursor: pointer;
+                text-decoration: none;
+                color: #333;
+                position: relative;
+            }
+            .category-round-img-container {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                overflow: hidden;
+                margin-bottom: 15px;
+                box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+                border: 4px solid transparent;
+                background: linear-gradient(#fff, #fff) padding-box, linear-gradient(135deg, #ff007f, #ff6600, #ffb300) border-box;
+                transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease;
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            .category-round-item:hover .category-round-img-container {
+                transform: scale(1.15) translateY(-8px);
+                box-shadow: 0 20px 35px rgba(255, 102, 0, 0.3);
+            }
+            .category-round-img-container img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: 50%;
+                transition: transform 0.5s ease;
+            }
+            .category-round-item:hover .category-round-img-container img {
+                transform: scale(1.15) rotate(5deg);
+            }
+            .category-round-title {
+                font-size: 1.05rem;
+                font-weight: 800;
+                text-align: center;
+                white-space: nowrap;
+                transition: all 0.3s;
+                background: #111;
+                color: #fff;
+                padding: 8px 18px;
+                border-radius: 25px;
+                box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            }
+            .category-round-item:hover .category-round-title {
+                background: #ff6600;
+                color: #fff;
+                transform: translateY(-3px);
+            }
+        </style>
+        <div class="category-carousel-container" id="category-carousel">
+            <a href="/search?q=skincare" class="category-round-item track-click" data-category="skincare">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=200&q=80" alt="Skin Care"></div>
+                <span class="category-round-title">Skin Care</span>
+            </a>
+            <a href="/search?q=self care" class="category-round-item track-click" data-category="self care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&w=200&q=80" alt="Self Care"></div>
+                <span class="category-round-title">Self Care</span>
+            </a>
+            <a href="/search?q=hair care" class="category-round-item track-click" data-category="hair care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&w=200&q=80" alt="Hair Care"></div>
+                <span class="category-round-title">Hair Care</span>
+            </a>
+            <a href="/search?q=body care" class="category-round-item track-click" data-category="body care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1608248593875-e9b5fbd6938a?auto=format&fit=crop&w=200&q=80" alt="Body Care"></div>
+                <span class="category-round-title">Body Care</span>
+            </a>
+            <a href="/search?q=sun care" class="category-round-item track-click" data-category="sun care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1529262228551-0a2a5dc62e84?auto=format&fit=crop&w=200&q=80" alt="Sun Care"></div>
+                <span class="category-round-title">Sun Care</span>
+            </a>
+            <a href="/search?q=wellness" class="category-round-item track-click" data-category="wellness">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1506126613408-eca07ce68773?auto=format&fit=crop&w=200&q=80" alt="Wellness"></div>
+                <span class="category-round-title">Wellness</span>
+            </a>
+            <a href="/search?q=medicine" class="category-round-item track-click" data-category="medicine">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1584308666744-24d5e4a053c8?auto=format&fit=crop&w=200&q=80" alt="Medicine"></div>
+                <span class="category-round-title">Medicine</span>
+            </a>
+            <a href="/search?q=home" class="category-round-item track-click" data-category="home">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1513694203232-719a280e022f?auto=format&fit=crop&w=200&q=80" alt="Home"></div>
+                <span class="category-round-title">Home</span>
+            </a>
+            <a href="/search?q=accessories" class="category-round-item track-click" data-category="accessories">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1509319117193-57bab727e09d?auto=format&fit=crop&w=200&q=80" alt="Accessories"></div>
+                <span class="category-round-title">Accessories</span>
+            </a>
+            <a href="/search?q=men care" class="category-round-item track-click" data-category="men care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1621607512214-68297480165e?auto=format&fit=crop&w=200&q=80" alt="Men Care"></div>
+                <span class="category-round-title">Men Care</span>
+            </a>
+            <a href="/search?q=women care" class="category-round-item track-click" data-category="women care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1596462502278-27bfdc403348?auto=format&fit=crop&w=200&q=80" alt="Women Care"></div>
+                <span class="category-round-title">Women Care</span>
+            </a>
+            <a href="/search?q=baby care" class="category-round-item track-click" data-category="baby care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1519689680058-324335c77eba?auto=format&fit=crop&w=200&q=80" alt="Baby Care"></div>
+                <span class="category-round-title">Baby Care</span>
+            </a>
+            <a href="/search?q=kids care" class="category-round-item track-click" data-category="kids care">
+                <div class="category-round-img-container"><img src="https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?auto=format&fit=crop&w=200&q=80" alt="Kids Care"></div>
+                <span class="category-round-title">Kids Care</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- Layer 5: AI For You (Dynamic Personalization) -->
+    <section class="ai-recommendation-section" style="padding: 50px 20px; background-color: #fafafa; border-bottom: 1px solid #eaeaea;">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+                <h2 style="font-size: 2.2rem; font-weight: 800; color: #111;">✨ Curated For You <span style="font-size: 1rem; font-weight: 700; background: #ffe4e6; color: #e11d48; padding: 6px 14px; border-radius: 20px; margin-left: 10px; vertical-align: middle;">Powered by AI</span></h2>
+                <span style="background: linear-gradient(45deg, #ff007f, #ff6600); -webkit-background-clip: text; -webkit-text-fill-color: transparent; font-weight: 700; font-size: 1.1rem; animation: pulse 2s infinite;">Syncing with your vibe...</span>
+            </div>
+            <div id="ai-recommendation-content" style="background: #fff; padding: 40px; border-radius: 24px; border: 1px solid #eee; min-height: 180px; display: flex; align-items: center; justify-content: center; box-shadow: 0 10px 30px rgba(0,0,0,0.03);">
+                <div style="text-align: center;">
+                    <p style="color: #666; font-size: 1.2rem; margin: 0;">Explore categories and products below, and watch the AI magic happen! 🪄</p>
+                </div>
+            </div>
+        </div>
+        <style>
+            @keyframes pulse {
+                0% { opacity: 0.7; }
+                50% { opacity: 1; }
+                100% { opacity: 0.7; }
+            }
+        </style>
+    </section>
+
+    <!-- Layer 6: Featured Products Carousel -->
+    <section class="carousel-section" style="padding: 50px 20px; background: #fff;">
+        <div class="carousel-header" style="max-width: 1400px; margin: 0 auto 30px;">
+            <h2 style="font-size: 2.2rem; font-weight: 800;">🔥 Trending Right Now</h2>
+            <div class="carousel-nav">
+                <button class="carousel-btn" onclick="scrollCarousel('products-carousel', -1)">&#10094;</button>
+                <button class="carousel-btn" onclick="scrollCarousel('products-carousel', 1)">&#10095;</button>
+            </div>
+        </div>
+        <style>
+            .genz-product-card {
+                background: #fff;
+                border: 1px solid #f1f5f9;
+                border-radius: 20px;
+                padding: 20px;
+                text-align: center;
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s;
+                display: flex;
+                flex-direction: column;
+                cursor: pointer;
+            }
+            .genz-product-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 20px 40px rgba(0,0,0,0.08);
+                border-color: #ff6600;
+            }
+            .genz-product-image {
+                width: 100%;
+                height: 180px;
+                object-fit: contain;
+                margin-bottom: 20px;
+                background-color: #f8fafc;
+                border-radius: 16px;
+                padding: 15px;
+                box-sizing: border-box;
+                transition: transform 0.3s ease;
+            }
+            .genz-product-card:hover .genz-product-image {
+                transform: scale(1.05);
+            }
+            .genz-product-title {
+                font-size: 1.2rem;
+                color: #1e293b;
+                margin: 0 0 8px 0;
+                font-weight: 700;
+            }
+            .genz-product-price {
+                font-size: 1.3rem;
+                color: #ff6600;
+                font-weight: 800;
+                margin: 0 0 20px 0;
+            }
+            .genz-add-btn {
+                margin-top: auto;
+                background-color: #111;
+                color: white;
+                border: none;
+                padding: 12px 20px;
+                border-radius: 30px;
+                cursor: pointer;
+                font-weight: 700;
+                font-size: 1rem;
+                transition: all 0.2s ease;
+            }
+            .genz-product-card:hover .genz-add-btn {
+                background-color: #ff6600;
+                transform: scale(1.05);
+            }
+        </style>
+        <div class="carousel-container" id="products-carousel" style="max-width: 1400px; margin: 0 auto; padding-bottom: 20px;">
+            <div class="carousel-item genz-product-card track-click" data-category="pain relief">
+                <img src="https://images.unsplash.com/photo-1584308666744-24d5e4a053c8?auto=format&fit=crop&w=400&q=80" alt="Dolo 650mg" class="genz-product-image">
+                <h4 class="genz-product-title">Dolo 650mg</h4>
+                <p class="genz-product-price">₹30.00</p>
+                <button class="genz-add-btn">Add to Cart</button>
+            </div>
+            <div class="carousel-item genz-product-card track-click" data-category="skincare serum">
+                <img src="https://images.unsplash.com/photo-1620916566398-39f1143ab7be?auto=format&fit=crop&w=400&q=80" alt="Derma Co Serum" class="genz-product-image">
+                <h4 class="genz-product-title">Derma Co Serum</h4>
+                <p class="genz-product-price">₹599.00</p>
+                <button class="genz-add-btn">Add to Cart</button>
+            </div>
+            <div class="carousel-item genz-product-card track-click" data-category="face wash">
+                <img src="https://images.unsplash.com/photo-1556228578-0d85b1a4d571?auto=format&fit=crop&w=400&q=80" alt="Mamaearth Face Wash" class="genz-product-image">
+                <h4 class="genz-product-title">Mamaearth Face Wash</h4>
+                <p class="genz-product-price">₹259.00</p>
+                <button class="genz-add-btn">Add to Cart</button>
+            </div>
+            <div class="carousel-item genz-product-card track-click" data-category="health devices">
+                <img src="https://images.unsplash.com/photo-1631549916768-4119b2e5f926?auto=format&fit=crop&w=400&q=80" alt="Vicks Thermometer" class="genz-product-image">
+                <h4 class="genz-product-title">Vicks Thermometer</h4>
+                <p class="genz-product-price">₹150.00</p>
+                <button class="genz-add-btn">Add to Cart</button>
+            </div>
+            <div class="carousel-item genz-product-card track-click" data-category="first aid">
+                <img src="https://images.unsplash.com/photo-1608248543803-ba4f8c70ae0b?auto=format&fit=crop&w=400&q=80" alt="Band-Aid Washproof" class="genz-product-image">
+                <h4 class="genz-product-title">Band-Aid Washproof</h4>
+                <p class="genz-product-price">₹40.00</p>
+                <button class="genz-add-btn">Add to Cart</button>
+            </div>
+            <div class="carousel-item genz-product-card track-click" data-category="immunity">
+                <img src="https://images.unsplash.com/photo-1550572017-edb799986326?auto=format&fit=crop&w=400&q=80" alt="Vitamin C Zinc" class="genz-product-image">
+                <h4 class="genz-product-title">Vitamin C Zinc</h4>
+                <p class="genz-product-price">₹120.00</p>
+                <button class="genz-add-btn">Add to Cart</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Layer 7: Premium Care & Expert Advice (GenZ Bento Style) -->
+    <section class="services-layer" style="padding: 60px 20px; background-color: #fafafa; border-bottom: 1px solid #eaeaea;">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <h2 style="font-size: 2.2rem; font-weight: 800; text-align: center; margin-bottom: 40px; background: linear-gradient(45deg, #ff007f, #ff6600); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Level Up Your Routine 🚀</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 30px;">
+                
+                <div class="bento-card track-click" data-category="premium brands" style="background-image: url('https://images.unsplash.com/photo-1629198688000-71f23e745b6e?auto=format&fit=crop&w=800&q=80'); min-height: 300px;">
+                    <span class="bento-tag" style="background: rgba(255, 0, 127, 0.3); border-color: rgba(255, 0, 127, 0.5);">Top Tier ✨</span>
+                    <div class="bento-content">
+                        <h3 class="bento-title" style="font-size: 2rem;">Premium Care</h3>
+                        <p class="bento-desc">Explore top-shelf wellness from brands like Mamaearth & Derma Co.</p>
+                        <a href="/search?q=premium" class="bento-btn" style="background: #fff; color: #ff007f;">Shop Premium</a>
+                    </div>
+                </div>
+
+                <div class="bento-card track-click" data-category="expert consultation" style="background-image: url('https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?auto=format&fit=crop&w=800&q=80'); min-height: 300px;">
+                    <span class="bento-tag" style="background: rgba(0, 200, 255, 0.3); border-color: rgba(0, 200, 255, 0.5);">Ask a Pro 👩‍⚕️</span>
+                    <div class="bento-content">
+                        <h3 class="bento-title" style="font-size: 2rem;">Expert Advice</h3>
+                        <p class="bento-desc">Not sure what you need? Get personalized guidance from our pharmacists.</p>
+                        <a href="#" class="bento-btn" style="background: #fff; color: #0088cc;">Consult Now</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- Layer 8: Comprehensive Modern Footer -->
+    <footer class="main-footer" style="background: #131921; color: #cbd5e1; padding: 60px 20px 20px; font-size: 0.85rem; line-height: 1.6; border-top: 1px solid #232f3e;">
+        <div style="max-width: 1400px; margin: 0 auto;">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 40px; border-bottom: 1px solid #333; padding-bottom: 40px;">
+                
+                <!-- Customer Care -->
+                <div>
+                    <h4 style="color: #fff; font-size: 1rem; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Customer care</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Help & FAQs</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Delivery & returns</a></li>
+                        <li><a href="/contact" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Contact us</a></li>
+                    </ul>
+                </div>
+
+                <!-- More from YuLiv -->
+                <div>
+                    <h4 style="color: #fff; font-size: 1rem; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">More from YuLiv</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="{{ url_for('about') }}" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">About YuLiv / Our story</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Subscribe & save</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Commitment to the planet</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Recycling info</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Offers & discounts</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Gift cards</a></li>
+                    </ul>
+                </div>
+
+                <!-- Legal & Policy -->
+                <div>
+                    <h4 style="color: #fff; font-size: 1rem; margin-bottom: 20px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Legal</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px;">
+                        <li><a href="{{ url_for('terms') }}" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Terms & conditions</a></li>
+                        <li><a href="{{ url_for('privacy') }}" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Privacy policy</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Disclaimer</a></li>
+                        <li><a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;">Legal Information</a></li>
+                    </ul>
+                </div>
+
+                <!-- Reviews & App -->
+                <div>
+                    <h4 style="color: #fff; font-size: 1rem; margin-bottom: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Reviews</h4>
+                    <div style="margin-bottom: 25px; display: flex; align-items: center; gap: 10px; background: rgba(255,255,255,0.05); padding: 10px 15px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                        <div style="color: #fbbf24; font-size: 1.2rem; letter-spacing: 2px;">★★★★★</div>
+                        <div style="display: flex; flex-direction: column; line-height: 1.2;">
+                            <span style="font-size: 0.8rem; font-weight: bold; color: #fff;">4.9 / 5.0 Rating</span>
+                            <span style="font-size: 0.75rem; color: #9ca3af;">Based on Google & Web Reviews</span>
+                        </div>
+                    </div>
+                    
+                    <h4 style="color: #fff; font-size: 1rem; margin-bottom: 15px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">Download our app</h4>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <a href="#" style="display: inline-block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" style="height: 38px;">
+                        </a>
+                        <a href="#" style="display: inline-block; transition: transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                            <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" style="height: 38px;">
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Bottom -->
+            <div style="display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 20px;">
+                <div style="color: #9ca3af;">
+                    <p style="margin: 0; font-size: 0.85rem;">📍 38, T.Nagar, Opp. Alvernia School Road, Ramanathapuram, Coimbatore</p>
+                    <p style="margin: 5px 0 0 0; font-size: 0.85rem;">© YuLiv Pharmacy 2024. All rights reserved.</p>
+                </div>
+                <div style="display: flex; gap: 20px; font-size: 1.2rem;">
+                    <!-- Instagram -->
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;" title="Instagram" onmouseover="this.style.color='#E1306C'" onmouseout="this.style.color='#cbd5e1'">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.067 3.204.146 4.771 1.691 4.919 4.919.055 1.265.067 1.645.067 4.851 0 3.205-.012 3.584-.067 4.85-.148 3.228-1.715 4.773-4.919 4.919-1.266.055-1.646.067-4.85.067-3.204 0-3.584-.012-4.85-.067-3.204-.146-4.771-1.691-4.919-4.919-.055-1.265-.067-1.645-.067-4.851 0-3.205.012-3.584.067-4.85.148-3.228 1.715-4.773 4.919-4.919 1.266-.055 1.646-.067 4.85-.067zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 1.76-6.98 6.208-.058 1.28-.072 1.688-.072 4.947s.014 3.667.072 4.947c.2 4.448 2.622 6.008 6.98 6.208 1.28.058 1.688.072 4.947.072s3.667-.014 4.947-.072c4.358-.2 6.78-1.76 6.98-6.208.058-1.28.072-1.688.072-4.947s-.014-3.667-.072-4.947c-.2-4.448-2.622-6.008-6.98-6.208-1.28-.058-1.688-.072-4.947-.072zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.162 6.162 6.162 6.162-2.759 6.162-6.162-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+                    </a>
+                    <!-- X (Twitter) -->
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;" title="X (Twitter)" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#cbd5e1'">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+                    </a>
+                    <!-- TikTok -->
+                    <a href="#" style="color: #cbd5e1; text-decoration: none; transition: color 0.2s;" title="TikTok" onmouseover="this.style.color='#69C9D0'" onmouseout="this.style.color='#cbd5e1'">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.15 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        <style>
+            .main-footer a:hover { color: #ff6600 !important; }
+        </style>
+    </footer>
+
+    <script>
+        function scrollCarousel(carouselId, direction) {
+            const carousel = document.getElementById(carouselId);
+            const scrollAmount = carousel.offsetWidth * 0.8; // Scroll 80% of the visible width
+            carousel.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
+        }
+
+        // Gen Z AI Tracker Logic
+        document.addEventListener('DOMContentLoaded', () => {
+            let preferences = JSON.parse(localStorage.getItem('yuliv_ai_prefs')) || [];
+
+            function trackPreference(pref) {
+                if (!preferences.includes(pref)) {
+                    preferences.push(pref);
+                    if (preferences.length > 5) preferences.shift(); // Keep only last 5
+                    localStorage.setItem('yuliv_ai_prefs', JSON.stringify(preferences));
+                    fetchRecommendations();
+                }
+            }
+
+            // Track Category Clicks specifically if needed, but track-click covers it
+            document.querySelectorAll('.track-click').forEach(item => {
+                item.addEventListener('click', (e) => {
+                    // if it's a link, we don't want to prevent default, just let it track
+                    const dataCat = item.getAttribute('data-category');
+                    if(dataCat) trackPreference(dataCat);
+                });
+            });
+
+            function fetchRecommendations() {
+                if(preferences.length === 0) return;
+                const container = document.getElementById('ai-recommendation-content');
+                if(!container) return;
+                
+                container.innerHTML = '<div style="text-align: center;"><div style="font-size: 3rem; animation: float 2s ease-in-out infinite;">🧠</div><p style="margin-top:15px; font-weight:800; font-size: 1.2rem; background: linear-gradient(45deg, #ff007f, #ff6600); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">AI is cooking up your personalized vibe...</p></div>';
+                
+                fetch('/api/recommend', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ preferences: preferences })
+                })
+                .then(res => res.json())
+                .then(data => {
+                    container.innerHTML = data.html;
+                })
+                .catch(err => {
+                    container.innerHTML = '<div style="text-align: center;"><p style="font-size: 1.2rem; color: #666; font-weight: bold;">AI is taking a quick nap 😴.<br>Check back later!</p></div>';
+                });
+            }
+
+            // Fetch on page load if preferences exist
+            if(preferences.length > 0) fetchRecommendations();
+        });
+    </script>
+    <style>
+        @keyframes float { 
+            0% { transform: translateY(0px); } 
+            50% { transform: translateY(-10px); } 
+            100% { transform: translateY(0px); } 
+        }
+    </style>
+</main>
+{% endblock %}

@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="content" style="max-width: 800px; margin: 40px auto; background: #fff; padding: 40px; border-radius: 12px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
+    <h2 style="color: #0d9488; margin-bottom: 20px; font-size: 2rem;">Your Recommendations</h2>
+    <p style="font-size: 1.1rem; color: #555;">Based on your activity, our AI suggests checking out our trending categories!</p>
+    
+    <div style="display: flex; gap: 15px; margin-top: 30px; flex-wrap: wrap;">
+        <a href="{{ url_for('shop_by_category', category_name='skincare') }}" style="padding: 10px 20px; background: #111; color: white; border-radius: 20px; text-decoration: none; font-weight: bold; transition: 0.2s;">✨ Skincare</a>
+        <a href="{{ url_for('shop_by_category', category_name='vitamins') }}" style="padding: 10px 20px; background: #111; color: white; border-radius: 20px; text-decoration: none; font-weight: bold; transition: 0.2s;">💊 Vitamins</a>
+        <a href="{{ url_for('shop_by_category', category_name='wellness') }}" style="padding: 10px 20px; background: #111; color: white; border-radius: 20px; text-decoration: none; font-weight: bold; transition: 0.2s;">🧘 Wellness</a>
+    </div>
+</div>
+{% endblock %}

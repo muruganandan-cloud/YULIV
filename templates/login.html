@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="auth-wrapper">
+    <div class="auth-alert">
+        <span class="alert-icon">✔️</span> 
+        To access the page you requested, please login or create a free account.
+    </div>
+
+    <div class="auth-container">
+        
+        <div class="auth-box">
+            <h2>Login</h2>
+            <p class="subtitle">Not a member? <a href="#register-section">Click here to register</a></p>
+            
+            <form action="/login" method="POST">
+                <div class="input-group">
+                    <label for="login-email">Username *</label>
+                    <input type="text" id="login-email" name="username" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="login-password">Password *</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="login-password" name="password" required>
+                        <span class="eye-icon">👁️</span>
+                    </div>
+                </div>
+
+                <div class="mock-captcha">
+                    <span class="captcha-check">✅ Success!</span>
+                    <span class="captcha-logo">Security Check</span>
+                </div>
+
+                <button type="submit" class="auth-btn">Log in</button>
+                <div class="forgot-link">
+                    <a href="/reset-password">Forgot your password or email address?</a>
+                </div>
+            </form>
+        </div>
+
+        <div class="auth-box" id="register-section">
+            <h2>Register</h2>
+            
+            <form action="/signup" method="POST">
+                <div class="input-group">
+                    <label for="reg-email">Username *</label>
+                    <input type="text" id="reg-email" name="username" required>
+                </div>
+                
+                <div class="input-group">
+                    <label for="reg-pincode">Default Pincode (Optional)</label>
+                    <input type="text" id="reg-pincode" name="pincode" maxlength="6" pattern="\d{6}">
+                </div>
+                
+                <div class="input-group">
+                    <label for="reg-password">Password *</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="reg-password" name="password" required>
+                        <span class="eye-icon">👁️</span>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label for="reg-confirm">Confirm password *</label>
+                    <input type="password" id="reg-confirm" name="confirm_password" required>
+                </div>
+
+                <div class="mock-captcha">
+                    <span class="captcha-check">✅ Success!</span>
+                    <span class="captcha-logo">Security Check</span>
+                </div>
+
+                <button type="submit" class="auth-btn">Register</button>
+                
+                <p class="terms-text">
+                    By submitting your email address, you agree to YuLiv Pharmacy's <a href="#">Privacy Policy</a> and <a href="#">Terms & Conditions</a>.
+                </p>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
