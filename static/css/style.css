@@ -14,14 +14,16 @@ header {
 }
 
 .header-container {
-    max-width: 100%; /* Pushes to extreme edges like Amazon */
     width: 100%;
+    max-width: 1400px; 
     margin: 0 auto;
-    padding: 10px 15px;
+    padding: 10px 15px; /* Scaled down padding slightly for mobile screen safety */
     display: flex;
+    flex-wrap: wrap; /* CRITICAL MOBILE FIX: Allows items to break into a new row instead of pushing out horizontally */
     justify-content: space-between;
     align-items: center;
-    box-sizing: border-box;
+    box-sizing: border-box; /* Forces padding to stay within the width bounds */
+
 }
 
 .logo-area { display: flex; align-items: center; flex-shrink: 0; }
@@ -728,4 +730,25 @@ header {
 }
 @media (max-width: 480px) {
     .carousel-item { flex: 0 0 85%; }
+}
+/* --- RESPONSIVE MOBILE OVERRIDES --- */
+@media screen and (max-width: 768px) {
+    /* Prevents any container component from breaking past the structural viewport bounds */
+    body, html, div, section, header {
+        max-width: 100% !important;
+        overflow-x: hidden;
+    }
+
+    /* Stack flex containers vertically on small displays */
+    .header-container, .navbar, .footer-container {
+        flex-direction: column !important;
+        gap: 10px;
+        text-align: center;
+    }
+
+    /* Force search bar inputs and product view components to comfortably fit 100% phone width */
+    input[type="text"], .search-bar, .product-item, .ai-card {
+        width: 100% !important;
+        box-sizing: border-box !important;
+    }
 }
