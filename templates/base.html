@@ -434,5 +434,33 @@
         if (closeSidebarBtn) closeSidebarBtn.addEventListener('click', closeSidebar);
         if (overlay) overlay.addEventListener('click', closeSidebar);
     </script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    // 1. Locate all password input fields and modern password eye container buttons
+    const passwordInputs = document.querySelectorAll('input[type="password"]');
+    
+    passwordInputs.forEach(input => {
+        // Find the closest sibling icon container element or relative parent toggle
+        const toggleIcon = input.parentElement.querySelector('.toggle-password') || 
+                           input.nextElementSibling;
+        
+        if (toggleIcon) {
+            // Apply cursor style rules dynamically so users know it is clickable
+            toggleIcon.style.cursor = 'pointer';
+            
+            toggleIcon.addEventListener('click', function () {
+                // 2. Switch input types smoothly to toggle visibility status
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    toggleIcon.textContent = '👁️'; // Toggle visual state feedback if text based
+                } else {
+                    input.type = 'password';
+                    toggleIcon.textContent = '👁️‍🗨️'; // Re-mask text field variables securely
+                }
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>
