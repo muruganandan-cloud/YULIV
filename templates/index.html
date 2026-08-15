@@ -95,7 +95,8 @@
             }
         </style>
         <div class="bento-grid">
-            <div class="bento-card card-large track-click" data-category="trending skincare" style="background-image: url('https://images.unsplash.com/photo-1615715563344-9345eeae5ba0?auto=format&fit=crop&w=800&q=80');">
+            <div id="smart-wellness-carousel" class="bento-card card-large track-click smart-wellness-carousel" data-category="trending skincare" style="background-image: url('https://images.unsplash.com/photo-1615715563344-9345eeae5ba0?auto=format&fit=crop&w=800&q=80');">
+                <span class="bento-tag">Trending 🔥</span>
                 <span class="bento-tag">Trending 🔥</span>
                 <div class="bento-content">
                     <h3 class="bento-title">Smart Wellness Routine</h3>
@@ -670,12 +671,34 @@
         </style>
     </footer>
 
-    <script>
+     <script>
         function scrollCarousel(carouselId, direction) {
             const carousel = document.getElementById(carouselId);
             const scrollAmount = carousel.offsetWidth * 0.8; // Scroll 80% of the visible width
             carousel.scrollBy({ left: scrollAmount * direction, behavior: 'smooth' });
         }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const smartWellnessCarousel = document.getElementById('smart-wellness-carousel');
+            const smartWellnessImages = [
+                'https://images.unsplash.com/photo-1615715563344-9345eeae5ba0?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=800&q=80',
+                'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?auto=format&fit=crop&w=800&q=80'
+            ];
+            let smartWellnessImageIndex = 0;
+
+            if (smartWellnessCarousel && smartWellnessImages.length > 1) {
+                window.setInterval(() => {
+                    smartWellnessImageIndex = (smartWellnessImageIndex + 1) % smartWellnessImages.length;
+                    smartWellnessCarousel.classList.add('is-changing-image');
+
+                    window.setTimeout(() => {
+                        smartWellnessCarousel.style.backgroundImage = `url('${smartWellnessImages[smartWellnessImageIndex]}')`;
+                        smartWellnessCarousel.classList.remove('is-changing-image');
+                    }, 250);
+                }, 15000);
+            }
+        });
 
         // Gen Z AI Tracker Logic
         document.addEventListener('DOMContentLoaded', () => {

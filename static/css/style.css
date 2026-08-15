@@ -613,6 +613,14 @@ header {
     min-width: 250px;
 }
 
+.smart-wellness-carousel {
+    transition: background-image 0.5s ease, opacity 0.25s ease;
+}
+
+.smart-wellness-carousel.is-changing-image {
+    opacity: 0.72;
+}
+
 /* Product Card specific */
 .product-card {
     background: #fff;
