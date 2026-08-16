@@ -95,7 +95,8 @@
             }
         </style>
         <div class="bento-grid">
-            <div id="smart-wellness-carousel" class="bento-card card-large track-click smart-wellness-carousel" data-category="trending skincare" style="background-image: url('https://images.unsplash.com/photo-1615715563344-9345eeae5ba0?auto=format&fit=crop&w=800&q=80');">
+            <div class="bento-card card-large track-click smart-wellness-carousel" data-category="trending skincare">
+                <img id="smart-wellness-carousel-image" class="smart-wellness-image" src="https://images.unsplash.com/photo-1615715563344-9345eeae5ba0?auto=format&fit=crop&w=800&q=80" alt="Skincare and wellness products">
                 <span class="bento-tag">Trending 🔥</span>
                 <span class="bento-tag">Trending 🔥</span>
                 <div class="bento-content">
@@ -679,7 +680,7 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            const smartWellnessCarousel = document.getElementById('smart-wellness-carousel');
+            const smartWellnessImage = document.getElementById('smart-wellness-carousel-image');
             const smartWellnessImages = [
                 'https://images.unsplash.com/photo-1615715563344-9345eeae5ba0?auto=format&fit=crop&w=800&q=80',
                 'https://images.unsplash.com/photo-1556228578-8c89e6adf883?auto=format&fit=crop&w=800&q=80',
@@ -687,15 +688,19 @@
             ];
             let smartWellnessImageIndex = 0;
 
-            if (smartWellnessCarousel && smartWellnessImages.length > 1) {
+            if (smartWellnessImage && smartWellnessImages.length > 1) {
                 window.setInterval(() => {
                     smartWellnessImageIndex = (smartWellnessImageIndex + 1) % smartWellnessImages.length;
-                    smartWellnessCarousel.classList.add('is-changing-image');
+                    const nextImage = new Image();
+                    nextImage.src = smartWellnessImages[smartWellnessImageIndex];
 
-                    window.setTimeout(() => {
-                        smartWellnessCarousel.style.backgroundImage = `url('${smartWellnessImages[smartWellnessImageIndex]}')`;
-                        smartWellnessCarousel.classList.remove('is-changing-image');
-                    }, 250);
+                    nextImage.onload = () => {
+                        smartWellnessImage.classList.add('is-changing-image');
+                        window.setTimeout(() => {
+                            smartWellnessImage.src = nextImage.src;
+                            smartWellnessImage.classList.remove('is-changing-image');
+                        }, 250);
+                    };
                 }, 15000);
             }
         });
