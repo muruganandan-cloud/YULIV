@@ -164,8 +164,8 @@ def search():
             PREFERRED_MODELS = [
                 "gemini-2.5-flash",
                 "gemini-2.5-pro",
-                "gemini-1.5-flash",
-                "gemini-1.5-pro",
+                "gemini-3.5-flash",
+                "gemini-3.1-flashlite",
             ]
 
             # 3. Normalize available model strings (stripping 'models/' prefix safely)
@@ -177,7 +177,7 @@ def search():
             # 4. Pick the highest-priority model that exists in available_models
             model_name = next(
                 (m for m in PREFERRED_MODELS if m in normalized_available),
-                normalized_available[0] if normalized_available else "gemini-1.5-flash",
+                normalized_available[0] if normalized_available else "gemini-3.5-flash"
             )
 
         print(f"🤖 Active Gemini Model: {model_name}")
