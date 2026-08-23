@@ -1,6 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 from sqlalchemy import text
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -72,9 +72,9 @@ class CartItem(db.Model):
     __tablename__ = 'cart_items'
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    medicine_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
+    product_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1)
-    medicine = db.relationship('Medicine', backref='cart_entries')
+    product = db.relationship('Products', backref='cart_entries')
 
 @app.context_processor
 def inject_user():
@@ -128,17 +128,27 @@ def home():
 def search():
     query = request.args.get('q', '').lower().strip()
     if not query:
-        return render_template('search_results.html', query=query, results=[], ai_solution=None)
+        return render_template('search_results.html', query=query, results=[], ai_top=None, ai_bottom=None)
 
-    # 1. Search local YuLiv inventory first
+    # 1. STRICTER INVENTORY SEARCH
     stop_words = {'i', 'need', 'want', 'some', 'medicine', 'for', 'a', 'an', 'my', 'have', 'the', 'is', 'in', 'with', 'to'}
     words = [word for word in query.split() if word not in stop_words] or [query]
-    search_conditions = [Medicine.product_name.ilike(f"%{word}%") for word in words]
-    search_conditions.append(Medicine.ean_code.ilike(f"%{query}%"))
     
-    # Store the actual products found in the database
-    results = Medicine.query.filter(or_(*search_conditions)).all()
+    # Must match ALL keywords in the product name (Changed to use AND)
+    name_conditions = [Medicine.product_name.ilike(f"%{word}%") for word in words]
+    
+    # Combine: Match ALL words in name, OR match the exact EAN code
+    results = Medicine.query.filter(
+        or_(
+            and_(*name_conditions),
+            Medicine.ean_code.ilike(f"%{query}%")
+        )
+    ).all()
+    
     print(f"Inventory search: Query='{query}', Found={len(results)}")
+
+    # 2. Extract in-stock names to prevent AI from duplicating them
+    in_stock_names = ", ".join([item.product_name for item in results]) if results else "None"
 
     # --- EXTERNAL AI INTEGRATION ---
     # No product was found in local inventory, so retain the existing general
@@ -182,52 +192,46 @@ def search():
 
         prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{query}'.
         
-        CRITICAL INSTRUCTION: First, determine if the user is searching for a general SYMPTOM (e.g., headache, acne, stomach pain) OR a specific PRODUCT/BRAND (e.g., Dermaco, Niacinamide, Paracetamol).
+       CRITICAL INSTRUCTIONS: 
+        1. Determine if it is a SYMPTOM or a PRODUCT/BRAND.
+        2. We ALREADY have these items in stock: [{in_stock_names}]. DO NOT suggest these exact products in your alternatives. Suggest DIFFERENT substitute brands.
+        3. Return ONLY raw HTML code. Do not use markdown blocks.
+        4. You MUST separate the top Insights section and the bottom Alternatives section using exactly this text: <!-- SPLIT -->
         
-        Return ONLY raw HTML code (no markdown backticks, no ```html). 
-        
-        IF IT IS A SYMPTOM, use this exact structure:
+        IF IT IS A SYMPTOM, format exactly like this:
         <div class="ai-card">
             <h4 class="card-title">🩺 Understanding Your Symptoms</h4>
-            <p style="margin-bottom: 12px; line-height: 1.5;"><strong>Possible Causes:</strong> [Provide a detailed 3-4 sentence explanation of root causes]</p>
-            <p style="margin-bottom: 0; line-height: 1.5;"><strong>Lifestyle Advice:</strong> [Provide 3-4 detailed practical home remedies or lifestyle tips]</p>
+            <p style="margin-bottom: 12px; line-height: 1.5;"><strong>Possible Causes:</strong> [Detailed explanation]</p>
+            <p style="margin-bottom: 0; line-height: 1.5;"><strong>Lifestyle Advice:</strong> [Practical tips]</p>
         </div>
+        <!-- SPLIT -->
         <div class="ai-card">
-            <h4 class="card-title">💊 Suggested Medication</h4>
-            <!-- Repeat the div below 5 to 6 times for different medicines -->
-            <div class="product-item">
-                <h5>[Brand Name]</h5>
-                <p><strong>Active Ingredient:</strong> [Ingredient]</p>
-                <p><strong>Pack Size:</strong> [Size]</p>
-                <p><strong>Estimated Price:</strong> [Price]</p>
-                <p><strong>Use:</strong> [Brief description]</p>
-            </div>
+            <h4 class="card-title">💊 Other Over-the-Counter Options</h4>
+            <div class="product-item">...</div>
         </div>
         
-        IF IT IS A PRODUCT OR BRAND, use this exact structure instead:
+        IF IT IS A PRODUCT OR BRAND, format exactly like this:
         <div class="ai-card">
             <h4 class="card-title">📦 Product Insights</h4>
-            <p style="margin-bottom: 12px; line-height: 1.5;"><strong>About this Search:</strong> [Explain what this product/brand is and what it is used for]</p>
-            <p style="margin-bottom: 0; line-height: 1.5;"><strong>Key Ingredients:</strong> [List main active ingredients]</p>
+            <p style="margin-bottom: 12px; line-height: 1.5;"><strong>About this Search:</strong> [Explanation]</p>
+            <p style="margin-bottom: 0; line-height: 1.5;"><strong>Key Ingredients:</strong> [List ingredients]</p>
         </div>
+        <!-- SPLIT -->
         <div class="ai-card">
-            <h4 class="card-title">🔄 Similar Alternatives to Consider</h4>
-            <!-- Repeat the div below 4 to 5 times for different substitute brands -->
-            <div class="product-item">
-                <h5>[Alternative Brand Name]</h5>
-                <p><strong>Active Ingredient:</strong> [Ingredient]</p>
-                <p><strong>Pack Size:</strong> [Size]</p>
-                <p><strong>Estimated Price:</strong> [Price]</p>
-                <p><strong>Why it's a good substitute:</strong> [Brief reason why they should buy this instead]</p>
-            </div>
+            <h4 class="card-title">🔄 Alternative Brands to Consider</h4>
+            <div class="product-item">...</div>
         </div>
-        
-        Include this disclaimer at the very bottom regardless of which option you choose:
-        <p style="grid-column: 1 / -1; color: #dc2626; font-size: 0.9em; font-style: italic; text-align: center; margin-top: 15px;">Disclaimer: Please consult a healthcare professional before taking any medication. Prices are estimates.</p>"""
+        """
 
-        # Generate the AI response
         response = client.models.generate_content(model=model_name, contents=prompt)
-        ai_solution = response.text
+        ai_solution = response.text.replace('```html', '').replace('```', '').strip()
+        
+        # Split the AI HTML into Top (Insights) and Bottom (Alternatives)
+        if "<!-- SPLIT -->" in ai_solution:
+            ai_top, ai_bottom = ai_solution.split("<!-- SPLIT -->", 1)
+        else:
+            ai_top = ai_solution
+            ai_bottom = ""
         
     except Exception as e:
         print(f"AI Error: {e}")

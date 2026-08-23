@@ -7,20 +7,21 @@
         Search Results for <span>"{{ query }}"</span>
     </h2>
 
-    {% if ai_solution %}
-    <div class="ai-dashboard">
+    <!-- 1. TOP SECTION: AI Health Insights -->
+    {% if ai_top %}
+    <div class="ai-dashboard" style="margin-bottom: 30px;">
         <div class="ai-dashboard-header">
             <h3>✨ Personalized AI Health Insights</h3>
         </div>
-
         <div class="ai-grid-container">
-            {{ ai_solution|safe }}
+            {{ ai_top|safe }}
         </div>
     </div>
     {% endif %}
 
+    <!-- 2. MIDDLE SECTION: Physical Store Inventory (Your exact code) -->
     {% if results %}
-    <h3 class="search-title" style="margin-top: 40px; font-size: 1.5rem;">Available in Our Store</h3>
+    <h3 class="search-title" style="margin-top: 20px; font-size: 1.5rem;">Available in Our Store</h3>
     <div class="ai-grid-container" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
         {% for med in results %}
         <div class="ai-card" style="margin-bottom: 20px;">
@@ -45,6 +46,19 @@
         {% endfor %}
     </div>
     {% endif %}
+
+    <!-- 3. BOTTOM SECTION: AI Alternative Suggestions -->
+    {% if ai_bottom %}
+    <div class="ai-dashboard" style="margin-top: 40px;">
+        <div class="ai-dashboard-header">
+            <h3>🔄 Similar Alternatives to Consider</h3>
+        </div>
+        <div class="ai-grid-container">
+            {{ ai_bottom|safe }}
+        </div>
+    </div>
+    {% endif %}
+
 </div>
 
 {% endblock %}
