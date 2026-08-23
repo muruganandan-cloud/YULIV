@@ -8,31 +8,32 @@ def update_system():
     print("🔄 Starting YuLiv System Update...")
     
     with app.app_context():
-        # --- PART 1: SCHEMA FIX (Cart Items) ---
+        # --- PART 1: SCHEMA FIX ---
         print("1. Rebuilding cart_items table...")
         CartItem.__table__.drop(db.engine, checkfirst=True)
         CartItem.__table__.create(db.engine)
         
-        # --- PART 2: DUPLICATE CLEANUP ---
-        # This acts as a vacuum cleaner to remove the existing 
-        # clones from previous bugs before we run the upsert.
+        # --- PART 2: AGGRESSIVE DUPLICATE CLEANUP ---
         print("2. Scanning for and removing existing duplicate products...")
         all_products = Products.query.all()
         seen_items = set()
         duplicates_removed = 0
         
         for item in all_products:
-            # Identify uniqueness by EAN (if available) or product name
-            identifier = item.ean_code if item.ean_code else item.product_name
+            # Create a bulletproof identifier: all lowercase, absolutely no spaces
+            if item.ean_code and str(item.ean_code).strip():
+                identifier = str(item.ean_code).strip().lower()
+            else:
+                identifier = str(item.product_name).strip().lower().replace(' ', '')
+                
             if identifier in seen_items:
                 db.session.delete(item)
                 duplicates_removed += 1
             else:
                 seen_items.add(identifier)
         
-        if duplicates_removed > 0:
-            db.session.commit()
-            print(f"   🗑️ Removed {duplicates_removed} duplicate clones!")
+        db.session.commit()
+        print(f"   🗑️ Removed {duplicates_removed} duplicate clones!")
 
         # --- PART 3: SMART UPSERT ---
         print("3. Starting Intelligent Inventory Sync (Upsert)...")
@@ -47,8 +48,9 @@ def update_system():
             reader = csv.DictReader(f)
             
             for row in reader:
-                ean = row.get('ean_code', '').strip() if row.get('ean_code') else None
-                name = row.get('product_name', '').strip()
+                # Clean the CSV inputs aggressively
+                ean = str(row.get('ean_code', '')).strip()
+                name = str(row.get('product_name', '')).strip()
                 
                 if not name and not ean:
                     continue
@@ -62,15 +64,28 @@ def update_system():
                 except ValueError:
                     continue
 
-                # Search for an existing match
+                # Aggressive Matching Strategy
                 existing_product = None
+                
+                # 1. Match by exact EAN
                 if ean:
                     existing_product = Products.query.filter_by(ean_code=ean).first()
+                
+                # 2. Match by exact Name
                 if not existing_product and name:
                     existing_product = Products.query.filter_by(product_name=name).first()
+                    
+                # 3. Last Resort: Loop through and match by squished, lowercase name
+                if not existing_product and name:
+                    clean_csv_name = name.lower().replace(' ', '')
+                    for p in Products.query.all():
+                        db_name = str(p.product_name).lower().replace(' ', '')
+                        if db_name == clean_csv_name:
+                            existing_product = p
+                            break
 
                 if existing_product:
-                    # Update the existing product safely
+                    # Update existing
                     existing_product.product_name = name
                     existing_product.mrp = mrp
                     existing_product.selling_price = selling_price
@@ -80,7 +95,7 @@ def update_system():
                         existing_product.ean_code = ean
                     updated_count += 1
                 else:
-                    # Insert it only if it is entirely new
+                    # Insert truly new item
                     new_product = Products(
                         ean_code=ean,
                         product_name=name,
@@ -95,7 +110,6 @@ def update_system():
         db.session.commit()
         print(f"✅ Inventory sync complete: {added_count} newly added, {updated_count} updated.")
         
-        # Safety net: Create any other missing tables
         db.create_all()
         print("🚀 System update finished successfully!")
 
