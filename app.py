@@ -156,28 +156,35 @@ def search():
         
     
          # Change this on lines 114 and 198
-        api_key = os.getenv("OPENAI_API_KEY")
-  
-        # Dynamically find modern available models your API key has clearance to use
-        available_models = [m.name for m in client.models.list()]
-        
-        if not available_models:
-            raise Exception("No AI models are available. Please check if your API key has 'Generative Language API' enabled.")
-            
-        # Standard fallback sequence checking for current operational models
-        if 'gemini-1.5-flash' in available_models:
-            model_name = 'gemini-1.5-flash'
-        elif 'gemini-2.5-pro' in available_models:
-            model_name = 'gemini-2.5-pro'
-        elif 'gemini-2.5-flash' in available_models:
-            model_name = 'gemini-2.5-flash'
-        else:
-            # Use the first available returned fallback model string cleanly
-            model_name = available_models[0]
+       # 1. Check if a specific model is forced via .env
+configured_model = os.getenv("GEMINI_MODEL")
 
-        print(f"Successfully loaded model: {model_name}")
+if configured_model:
+    model_name = configured_model.strip()
+else:
+    # 2. Desired priority list (from newest/best to reliable standard)
+    PREFERRED_MODELS = [
+        "gemini-2.5-flash",
+        "gemini-2.5-pro",
+        "gemini-1.5-flash",
+        "gemini-1.5-pro",
+    ]
 
-        prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{query}'.
+    # 3. Normalize available model strings (stripping 'models/' prefix safely)
+    normalized_available = [
+        (m.name if hasattr(m, "name") else str(m)).replace("models/", "").strip()
+        for m in available_models
+    ]
+
+    # 4. Pick the highest-priority model that exists in available_models
+    model_name = next(
+        (m for m in PREFERRED_MODELS if m in normalized_available),
+        normalized_available[0] if normalized_available else "gemini-1.5-flash"
+    )
+
+print(f"🤖 Active Gemini Model: {model_name}")
+
+prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{query}'.
         
         CRITICAL INSTRUCTION: First, determine if the user is searching for a general SYMPTOM (e.g., headache, acne, stomach pain) OR a specific PRODUCT/BRAND (e.g., Dermaco, Niacinamide, Paracetamol).
         
