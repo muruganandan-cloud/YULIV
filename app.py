@@ -32,10 +32,14 @@ app = Flask(__name__)
 import os
 
 # Check if we are running on the live PythonAnywhere server
+Python
+import os
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 if 'PYTHONANYWHERE_DOMAIN' in os.environ:
-    # --- LIVE DATABASE CONNECTION ---
-    # Replace <your_db_password> with your actual PythonAnywhere database password
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://yuliv:Yuliv123@yuliv.mysql.pythonanywhere-services.com/yuliv$yuliv_db'
+    # --- LIVE DATABASE CONNECTION (Free SQLite Workaround) ---
+    # This creates a file named 'live_yuliv.db' inside your project folder
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'live_yuliv.db')
 else:
     # Format: mysql+pymysql://username:password@127.0.0.1:3306/database_name
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Hanish5^611@127.0.0.1:3306/yuliv_db'
