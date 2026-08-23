@@ -130,17 +130,15 @@ def search():
     if not query:
         return render_template('search_results.html', query=query, results=[], ai_solution=None)
 
-    # Search local inventory first. When products are available, show the real
-    # product data instead of generating generic AI suggestions.
+    # 1. Search local YuLiv inventory first
     stop_words = {'i', 'need', 'want', 'some', 'medicine', 'for', 'a', 'an', 'my', 'have', 'the', 'is', 'in', 'with', 'to'}
     words = [word for word in query.split() if word not in stop_words] or [query]
     search_conditions = [Medicine.product_name.ilike(f"%{word}%") for word in words]
     search_conditions.append(Medicine.ean_code.ilike(f"%{query}%"))
+    
+    # Store the actual products found in the database
     results = Medicine.query.filter(or_(*search_conditions)).all()
-
-    if results:
-        print(f"Inventory search: Query='{query}', Found={len(results)}")
-        return render_template('search_results.html', query=query, results=results, ai_solution=None)
+    print(f"Inventory search: Query='{query}', Found={len(results)}")
 
     # --- EXTERNAL AI INTEGRATION ---
     # No product was found in local inventory, so retain the existing general
@@ -226,16 +224,14 @@ def search():
         
         Include this disclaimer at the very bottom regardless of which option you choose:
         <p style="grid-column: 1 / -1; color: #dc2626; font-size: 0.9em; font-style: italic; text-align: center; margin-top: 15px;">Disclaimer: Please consult a healthcare professional before taking any medication. Prices are estimates.</p>"""
-        
+
+        # Generate the AI response
         response = client.models.generate_content(model=model_name, contents=prompt)
         ai_solution = response.text
         
-    except ImportError:
-        ai_solution = "<strong style='color:red;'>Setup Required:</strong> You need to install the AI library. Run <code>pip install google-genai</code> in your terminal and restart the server."
     except Exception as e:
         print(f"AI Error: {e}")
         error_string = str(e)
-        
         if "429" in error_string or "RESOURCE_EXHAUSTED" in error_string:
             ai_solution = """
             <div class="ai-card">
@@ -244,7 +240,10 @@ def search():
             </div>
             """
         else:
-            ai_solution = f"<strong style='color:red;'>AI Error:</strong> {error_string}<br><br><em>(Please ensure your API key is valid.)</em>"
+            ai_solution = f"<strong style='color:red;'>AI Error:</strong> {error_string}"
+
+    # 3. Final Step: Send BOTH the database 'results' AND the 'ai_solution' to the HTML template
+    return render_template('search_results.html', query=query, results=results, ai_solution=ai_solution)
     # -------------------------------
 
     print(f"Inventory search: Query='{query}', Found=0. Showing AI context.")
