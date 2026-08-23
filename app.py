@@ -26,10 +26,10 @@ if 'PYTHONANYWHERE_DOMAIN' in os.environ:
     # Replace <your_db_password> with your actual PythonAnywhere database password
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://YULIV:Yuliv123@YULIV.mysql.pythonanywhere-services.com/YULIV$yuliv_db'
 else:
-# Format: mysql+pymysql://username:password@127.0.0.1:3306/database_name
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Hanish5^611@127.0.0.1:3306/yuliv_db'
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'yuliv_pharmacy_secret_key_123' # Change this to a secure key
+    # Format: mysql+pymysql://username:password@127.0.0.1:3306/database_name
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Hanish5^611@127.0.0.1:3306/yuliv_db'
+    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+    app.config['SECRET_KEY'] = 'yuliv_pharmacy_secret_key_123' # Change this to a secure key
 
 db = SQLAlchemy(app)
 
