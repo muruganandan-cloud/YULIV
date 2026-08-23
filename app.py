@@ -165,12 +165,12 @@ def search():
             raise Exception("No AI models are available. Please check if your API key has 'Generative Language API' enabled.")
             
         # Standard fallback sequence checking for current operational models
-        if 'gemini-2.5-flash' in available_models:
-            model_name = 'gemini-2.5-flash'
+        if 'gemini-1.5-flash' in available_models:
+            model_name = 'gemini-1.5-flash'
         elif 'gemini-2.5-pro' in available_models:
             model_name = 'gemini-2.5-pro'
-        elif 'gemini-1.5-flash' in available_models:
-            model_name = 'gemini-1.5-flash'
+        elif 'gemini-2.5-flash' in available_models:
+            model_name = 'gemini-2.5-flash'
         else:
             # Use the first available returned fallback model string cleanly
             model_name = available_models[0]
