@@ -1,5 +1,6 @@
 from itertools import product
 from flask import Flask, render_template, request, redirect, url_for, session, flash
+from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, and_
 from sqlalchemy import text
@@ -30,6 +31,10 @@ else:
 
 app = Flask(__name__)
 
+# Fetch the secret key from the environment. 
+# The second argument is a fallback just in case the .env fails to load.
+app.secret_key = os.getenv('SECRET_KEY', 'fallback_default_secret_key_if_missing')
+
 import os
 
 # Check if we are running on the live PythonAnywhere server
@@ -44,7 +49,7 @@ else:
     # Format: mysql+pymysql://username:password@127.0.0.1:3306/database_name
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Hanish5^611@127.0.0.1:3306/yuliv_db'
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.config['SECRET_KEY'] = 'yuliv_pharmacy_secret_key_123' # Change this to a secure key
+    app.config['SECRET_KEY'] = os.getenv('SECRET_KEY', 'fallback_default_secret_key_if_missing')
 
 db = SQLAlchemy(app)
 
