@@ -1,7 +1,7 @@
 from itertools import product
 from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import or_, and_
+from sqlalchemy import or_, and_, func
 from sqlalchemy import text
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -140,31 +140,39 @@ def home():
     # This looks for index.html inside the 'templates' folder automatically
     return render_template('index.html')
 
-from sqlalchemy import or_, and_
-
 @app.route('/search')
 def search():
-    query = request.args.get('q', '').lower().strip()
-    if not query:
-        return render_template('search_results.html', query=query, results=[], ai_top=None, ai_bottom=None)
+    raw_query = request.args.get('q', '').lower().strip()
+    if not raw_query:
+        return render_template('search_results.html', query=raw_query, results=[], ai_top=None, ai_bottom=None)
 
-    # 1. STRICTER INVENTORY SEARCH
+    # 1. CLEAN THE QUERY
+    # Turn hyphens/commas into spaces so "sali-cinamide" becomes "sali cinamide"
+    clean_query = raw_query.replace('-', ' ').replace(',', ' ')
+
+    # 2. STRICTER INVENTORY SEARCH
     stop_words = {'i', 'need', 'want', 'some', 'medicine', 'for', 'a', 'an', 'my', 'have', 'the', 'is', 'in', 'with', 'to'}
-    words = [word for word in query.split() if word not in stop_words] or [query]
+    # Split the clean query into individual words
+    words = [word for word in clean_query.split() if word not in stop_words] or [clean_query.replace(' ', '')]
     
-    # Must match ALL keywords in the product name (Changed to use AND)
-    # NOTE: Assuming your database model is named 'Medicine'. If you renamed it to 'Products', change the word 'Medicine' below!
-    name_conditions = [Products.product_name.ilike(f"%{word}%") for word in words]
+    # 3. CRUSH THE DATABASE STRING (The Magic)
+    # This temporarily removes spaces and hyphens from the database column just for this search
+    crushed_db_name = func.replace(func.replace(Products.product_name, ' ', ''), '-', '')
+    
+    # Must match ALL keywords in the crushed product name
+    name_conditions = [crushed_db_name.ilike(f"%{word}%") for word in words]
     
     # Combine: Match ALL words in name, OR match the exact EAN code
     results = Products.query.filter(
         or_(
             and_(*name_conditions),
-            Products.ean_code.ilike(f"%{query}%")
+            Products.ean_code.ilike(f"%{raw_query}%")
         )
     ).all()
     
-    print(f"Inventory search: Query='{query}', Found={len(results)}")
+    print(f"Inventory search: Query='{raw_query}', Found={len(results)}")
+    
+    # ... (Keep the rest of your AI code exactly as it is below this line) ...
 
     # 2. Extract in-stock names to prevent AI from duplicating them
     in_stock_names = ", ".join([item.product_name for item in results]) if results else "None"
