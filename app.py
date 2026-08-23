@@ -153,38 +153,36 @@ def search():
     
     try:
         from google import genai
-        
-    
-         # Change this on lines 114 and 198
-       # 1. Check if a specific model is forced via .env
-configured_model = os.getenv("GEMINI_MODEL")
 
-if configured_model:
-    model_name = configured_model.strip()
-else:
-    # 2. Desired priority list (from newest/best to reliable standard)
-    PREFERRED_MODELS = [
-        "gemini-2.5-flash",
-        "gemini-2.5-pro",
-        "gemini-1.5-flash",
-        "gemini-1.5-pro",
-    ]
+        # 1. Check if a specific model is forced via .env
+        configured_model = os.getenv("GEMINI_MODEL")
 
-    # 3. Normalize available model strings (stripping 'models/' prefix safely)
-    normalized_available = [
-        (m.name if hasattr(m, "name") else str(m)).replace("models/", "").strip()
-        for m in available_models
-    ]
+        if configured_model:
+            model_name = configured_model.strip()
+        else:
+            # 2. Desired priority list (from newest/best to reliable standard)
+            PREFERRED_MODELS = [
+                "gemini-2.5-flash",
+                "gemini-2.5-pro",
+                "gemini-1.5-flash",
+                "gemini-1.5-pro",
+            ]
 
-    # 4. Pick the highest-priority model that exists in available_models
-    model_name = next(
-        (m for m in PREFERRED_MODELS if m in normalized_available),
-        normalized_available[0] if normalized_available else "gemini-1.5-flash"
-    )
+            # 3. Normalize available model strings (stripping 'models/' prefix safely)
+            normalized_available = [
+                (m.name if hasattr(m, "name") else str(m)).replace("models/", "").strip()
+                for m in available_models
+            ]
 
-print(f"🤖 Active Gemini Model: {model_name}")
+            # 4. Pick the highest-priority model that exists in available_models
+            model_name = next(
+                (m for m in PREFERRED_MODELS if m in normalized_available),
+                normalized_available[0] if normalized_available else "gemini-1.5-flash",
+            )
 
-prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{query}'.
+        print(f"🤖 Active Gemini Model: {model_name}")
+
+        prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{query}'.
         
         CRITICAL INSTRUCTION: First, determine if the user is searching for a general SYMPTOM (e.g., headache, acne, stomach pain) OR a specific PRODUCT/BRAND (e.g., Dermaco, Niacinamide, Paracetamol).
         
