@@ -10,8 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 -- Add the admin column if it doesn't exist
 -- (Moved this up here so all table modifications happen before loading data)
-ALTER TABLE users ADD COLUMN IF NOT EXISTS is_admin BOOLEAN DEFAULT FALSE;
-
+-- ALTER TABLE users ADD COLUMN is_admin BOOLEAN DEFAULT FALSE;
 SET FOREIGN_KEY_CHECKS = 0;
 DROP TABLE IF EXISTS inventory;
 SET FOREIGN_KEY_CHECKS = 1;
