@@ -20,14 +20,20 @@
     {% endif %}
 
     {% if results %}
-    <h3 class="search-title" style="margin-top: 40px; font-size: 1.5rem;">Local Store Availability</h3>
+    <h3 class="search-title" style="margin-top: 40px; font-size: 1.5rem;">Available in Our Store</h3>
     <div class="ai-grid-container" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
         {% for med in results %}
         <div class="ai-card" style="margin-bottom: 20px;">
             <div class="product-item" style="border: none; background: transparent; padding: 0;">
                 <h5 style="color: #0d9488; font-size: 1.15rem; margin-bottom: 10px;">{{ med.product_name }}</h5>
+                {% if med.ean_code %}
+                    <p><strong>Product Code:</strong> {{ med.ean_code }}</p>
+                {% endif %}
                 <p><strong>MRP:</strong> ₹{{ med.product_price }}</p>
                 <p><strong>Selling Price:</strong> ₹{{ med.selling_price }}</p>
+                {% if med.discount %}
+                    <p><strong>Discount:</strong> {{ med.discount }}%</p>
+                {% endif %}
                 {% if med.inventory_qty and med.inventory_qty > 0 %}
                     <p style="color: #16a34a; font-weight: bold;">In Stock: {{ med.inventory_qty }}</p>
                     <a href="{{ url_for('add_to_cart', medicine_id=med.id) }}" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">Add to Cart</a>

@@ -130,7 +130,21 @@ def search():
     if not query:
         return render_template('search_results.html', query=query, results=[], ai_solution=None)
 
+    # Search local inventory first. When products are available, show the real
+    # product data instead of generating generic AI suggestions.
+    stop_words = {'i', 'need', 'want', 'some', 'medicine', 'for', 'a', 'an', 'my', 'have', 'the', 'is', 'in', 'with', 'to'}
+    words = [word for word in query.split() if word not in stop_words] or [query]
+    search_conditions = [Medicine.product_name.ilike(f"%{word}%") for word in words]
+    search_conditions.append(Medicine.ean_code.ilike(f"%{query}%"))
+    results = Medicine.query.filter(or_(*search_conditions)).all()
+
+    if results:
+        print(f"Inventory search: Query='{query}', Found={len(results)}")
+        return render_template('search_results.html', query=query, results=results, ai_solution=None)
+
     # --- EXTERNAL AI INTEGRATION ---
+    # No product was found in local inventory, so retain the existing general
+    # health/product context supplied by the AI.
     ai_solution = None
     
     # To activate real AI: 
@@ -228,24 +242,8 @@ def search():
             ai_solution = f"<strong style='color:red;'>AI Error:</strong> {error_string}<br><br><em>(Please ensure your API key is valid.)</em>"
     # -------------------------------
 
-    # "AI-Lite" NLP: Remove conversational stop-words to parse natural language
-    # Example: "I need medicine for a headache" -> keywords: ["headache"]
-    stop_words = {'i', 'need', 'want', 'some', 'medicine', 'for', 'a', 'an', 'my', 'have', 'the', 'is', 'in', 'with', 'to'}
-    words = [word for word in query.split() if word not in stop_words]
-    
-    if not words:
-        words = [query] # Fallback if they only typed stop words
-
-    # Build a search condition that looks for ANY of the extracted keywords
-    search_conditions = [Medicine.product_name.ilike(f"%{word}%") for word in words]
-    
-    # Always allow an exact EAN code match just in case
-    search_conditions.append(Medicine.ean_code.ilike(f"%{query}%"))
-
-    results = Medicine.query.filter(or_(*search_conditions)).all()
-    
-    print(f"DEBUG: Query='{query}', AI-Tokens={words}, Found={len(results)}")
-    return render_template('search_results.html', query=query, results=results, ai_solution=ai_solution)
+    print(f"Inventory search: Query='{query}', Found=0. Showing AI context.")
+    return render_template('search_results.html', query=query, results=[], ai_solution=ai_solution)
 
 @app.route('/api/recommend', methods=['POST'])
 def ai_recommend():
