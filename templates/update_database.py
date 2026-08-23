@@ -1,5 +1,6 @@
 import csv
 import os
+from sqlalchemy import text
 from app import app, db, CartItem, Products
 
 CSV_FILENAME = 'inventory.csv'
@@ -13,27 +14,23 @@ def update_system():
         CartItem.__table__.drop(db.engine, checkfirst=True)
         CartItem.__table__.create(db.engine)
         
-        # --- PART 2: AGGRESSIVE DUPLICATE CLEANUP ---
-        print("2. Scanning for and removing existing duplicate products...")
-        all_products = Products.query.all()
-        seen_items = set()
-        duplicates_removed = 0
-        
-        for item in all_products:
-            # Create a bulletproof identifier: all lowercase, absolutely no spaces
-            if item.ean_code and str(item.ean_code).strip():
-                identifier = str(item.ean_code).strip().lower()
-            else:
-                identifier = str(item.product_name).strip().lower().replace(' ', '')
-                
-            if identifier in seen_items:
-                db.session.delete(item)
-                duplicates_removed += 1
-            else:
-                seen_items.add(identifier)
-        
-        db.session.commit()
-        print(f"   🗑️ Removed {duplicates_removed} duplicate clones!")
+        # --- PART 2: RAW SQL DEDUPLICATION (The Nuclear Option) ---
+        # This bypasses Python and forces the SQLite database to delete 
+        # all clones, keeping only the absolute oldest entry for each product name.
+        print("2. Destroying all duplicate clones in the database...")
+        try:
+            db.session.execute(text("""
+                DELETE FROM inventory 
+                WHERE id NOT IN (
+                    SELECT MIN(id) 
+                    FROM inventory 
+                    GROUP BY product_name
+                )
+            """))
+            db.session.commit()
+            print("   🗑️ Duplicates vaporized successfully!")
+        except Exception as e:
+            print(f"   ⚠️ Cleanup note: {e}")
 
         # --- PART 3: SMART UPSERT ---
         print("3. Starting Intelligent Inventory Sync (Upsert)...")
@@ -48,11 +45,10 @@ def update_system():
             reader = csv.DictReader(f)
             
             for row in reader:
-                # Clean the CSV inputs aggressively
-                ean = str(row.get('ean_code', '')).strip()
+                ean = str(row.get('ean_code', '')).strip() if row.get('ean_code') else None
                 name = str(row.get('product_name', '')).strip()
                 
-                if not name and not ean:
+                if not name:
                     continue
                     
                 # Parse numbers safely
@@ -64,28 +60,11 @@ def update_system():
                 except ValueError:
                     continue
 
-                # Aggressive Matching Strategy
-                existing_product = None
-                
-                # 1. Match by exact EAN
-                if ean:
-                    existing_product = Products.query.filter_by(ean_code=ean).first()
-                
-                # 2. Match by exact Name
-                if not existing_product and name:
-                    existing_product = Products.query.filter_by(product_name=name).first()
-                    
-                # 3. Last Resort: Loop through and match by squished, lowercase name
-                if not existing_product and name:
-                    clean_csv_name = name.lower().replace(' ', '')
-                    for p in Products.query.all():
-                        db_name = str(p.product_name).lower().replace(' ', '')
-                        if db_name == clean_csv_name:
-                            existing_product = p
-                            break
+                # Use ILIKE to ignore all uppercase/lowercase differences
+                existing_product = Products.query.filter(Products.product_name.ilike(name)).first()
 
                 if existing_product:
-                    # Update existing
+                    # Update existing item
                     existing_product.product_name = name
                     existing_product.mrp = mrp
                     existing_product.selling_price = selling_price
