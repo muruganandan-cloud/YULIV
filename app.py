@@ -208,7 +208,7 @@ def search():
 
         print(f"🤖 Active Gemini Model: {model_name}")
 
-        prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{query}'.
+        prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{raw_query}'.
         
        CRITICAL INSTRUCTIONS: 
         1. Determine if it is a SYMPTOM or a PRODUCT/BRAND.
