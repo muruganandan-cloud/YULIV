@@ -15,9 +15,14 @@
             <tbody>
                 {% for item in items %}
                 <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 15px; text-align: left;">{{ item.medicine.product_name }}</td>
+                    <!-- FIX 1: Changed item.Products to item.product -->
+                    <td style="padding: 15px; text-align: left;">{{ item.product.product_name }}</td>
+                    
                     <td style="padding: 15px;">{{ item.quantity }}</td>
-                    <td style="padding: 15px;">₹{{ item.medicine.selling_price * item.quantity }}</td>
+                    
+                    <!-- FIX 2: Changed item.Products to item.product -->
+                    <td style="padding: 15px;">₹{{ item.product.selling_price * item.quantity }}</td>
+                    
                     <td style="padding: 15px;"><a href="{{ url_for('remove_from_cart', cart_id=item.id) }}" style="color: #e11d48; text-decoration: none;">Remove</a></td>
                 </tr>
                 {% endfor %}

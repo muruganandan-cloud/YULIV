@@ -1,6 +1,6 @@
 import csv
 import os
-from app import app, db, Medicine  # Ensure 'Medicine' matches your model name in app.py
+from app import Products, app, db, Products # Ensure 'Products' matches your model name in app.py
 
 def import_csv():
     csv_file_path = os.path.join(os.path.dirname(__file__), 'inventory.csv')
@@ -11,14 +11,14 @@ def import_csv():
 
     with app.app_context():
         # Clear existing rows if restocking freshly
-        # Medicine.query.delete()
+        # Products.query.delete()
 
         count = 0
         with open(csv_file_path, mode='r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
             for row in reader:
                 # Map CSV column headers to your SQLAlchemy model fields
-                item = Medicine(
+                item = Products(
                     ean_code=row.get('EAN_CODE', '').strip(),
                     product_name=row.get('PRODUCT_NAME', '').strip(),
                     product_price=float(row.get('PRODUCT_PRICE', 0) or 0),

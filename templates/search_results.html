@@ -37,7 +37,7 @@
                 {% endif %}
                 {% if med.inventory_qty and med.inventory_qty > 0 %}
                     <p style="color: #16a34a; font-weight: bold;">In Stock: {{ med.inventory_qty }}</p>
-                    <a href="{{ url_for('add_to_cart', medicine_id=med.id) }}" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">Add to Cart</a>
+                    <a href="{{ url_for('add_to_cart', product_id=med.id) }}" style="display: inline-block; margin-top: 15px; padding: 10px 20px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 25px; font-weight: 600;">Add to Cart</a>
                 {% else %}
                     <p style="color: #dc2626; font-weight: bold;">Out of Stock</p>
                 {% endif %}

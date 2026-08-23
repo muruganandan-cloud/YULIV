@@ -1,4 +1,5 @@
-from flask import Flask, render_template, request, redirect, url_for, flash
+from itertools import product
+from flask import Flask, render_template, request, redirect, url_for, session, flash
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, and_
 from sqlalchemy import text
@@ -74,7 +75,9 @@ class CartItem(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     product_id = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=False)
     quantity = db.Column(db.Integer, default=1)
-    product = db.relationship('Products', backref='cart_entries')
+    
+    # This line MUST exist for the HTML to fetch the product name and price!
+    product = db.relationship('Products')
 
 @app.context_processor
 def inject_user():
@@ -83,7 +86,7 @@ def inject_user():
         cart_count = CartItem.query.filter_by(user_id=current_user.id).count()
     return dict(current_user=current_user, cart_count=cart_count)
 
-class Medicine(db.Model):
+class Products(db.Model):
     __tablename__ = 'inventory' # Matches your table name
     id = db.Column(db.Integer, primary_key=True)
     ean_code = db.Column(db.String(100))
@@ -96,7 +99,7 @@ class Medicine(db.Model):
 @app.route('/test-db')
 def test_db():
     try:
-        count = Medicine.query.count()
+        count = Products.query.count()
         return f"Success! Connected to database. Total items: {count}"
     except Exception as e:
         return f"Connection Failed: {str(e)}"
@@ -124,6 +127,8 @@ def home():
     # This looks for index.html inside the 'templates' folder automatically
     return render_template('index.html')
 
+from sqlalchemy import or_, and_
+
 @app.route('/search')
 def search():
     query = request.args.get('q', '').lower().strip()
@@ -135,13 +140,14 @@ def search():
     words = [word for word in query.split() if word not in stop_words] or [query]
     
     # Must match ALL keywords in the product name (Changed to use AND)
-    name_conditions = [Medicine.product_name.ilike(f"%{word}%") for word in words]
+    # NOTE: Assuming your database model is named 'Medicine'. If you renamed it to 'Products', change the word 'Medicine' below!
+    name_conditions = [Products.product_name.ilike(f"%{word}%") for word in words]
     
     # Combine: Match ALL words in name, OR match the exact EAN code
-    results = Medicine.query.filter(
+    results = Products.query.filter(
         or_(
             and_(*name_conditions),
-            Medicine.ean_code.ilike(f"%{query}%")
+            Products.ean_code.ilike(f"%{query}%")
         )
     ).all()
     
@@ -150,18 +156,9 @@ def search():
     # 2. Extract in-stock names to prevent AI from duplicating them
     in_stock_names = ", ".join([item.product_name for item in results]) if results else "None"
 
-    # --- EXTERNAL AI INTEGRATION ---
-    # No product was found in local inventory, so retain the existing general
-    # health/product context supplied by the AI.
-    ai_solution = None
-    
-    # To activate real AI: 
-    # 1. Run in terminal: pip install google-generativeai
-    # 2. Uncomment the code below and add your API key from Google AI Studio.
-    
+    # 3. Ask AI for Insights & Alternatives
     try:
         from google import genai
-
         # 1. Check if a specific model is forced via .env
         configured_model = os.getenv("GEMINI_MODEL")
 
@@ -237,17 +234,21 @@ def search():
         print(f"AI Error: {e}")
         error_string = str(e)
         if "429" in error_string or "RESOURCE_EXHAUSTED" in error_string:
-            ai_solution = """
+            # FIXED: Assigning to ai_top and ai_bottom so the return statement doesn't crash
+            ai_top = """
             <div class="ai-card">
                 <h4 class="card-title">⏳ AI is Catching Its Breath</h4>
                 <p style="margin-bottom: 0; line-height: 1.5;">Our AI pharmacist is currently assisting other customers. Please wait about 30 seconds and click search again!</p>
             </div>
             """
+            ai_bottom = ""
         else:
-            ai_solution = f"<strong style='color:red;'>AI Error:</strong> {error_string}"
+            # FIXED: Assigning to ai_top and ai_bottom here as well
+            ai_top = f"<strong style='color:red;'>AI Error:</strong> {error_string}"
+            ai_bottom = ""
 
-    # 3. Final Step: Send BOTH the database 'results' AND the 'ai_solution' to the HTML template
-    return render_template('search_results.html', query=query, results=results, ai_solution=ai_solution)
+    # 4. Final Step: Send BOTH the database 'results' AND the 'ai_solution' to the HTML template
+    return render_template('search_results.html', query=query, results=results, ai_top=ai_top, ai_bottom=ai_bottom)
     # -------------------------------
 
     print(f"Inventory search: Query='{query}', Found=0. Showing AI context.")
@@ -375,24 +376,34 @@ def shop_by_category(category_name):
     # We redirect the category click directly into your powerful AI search logic!
     return redirect(url_for('search', q=category_name))
 
-@app.route('/add_to_cart/<int:medicine_id>')
+@app.route('/add_to_cart/<int:product_id>')
 @login_required
-def add_to_cart(medicine_id):
-    item = CartItem.query.filter_by(user_id=current_user.id, medicine_id=medicine_id).first()
-    if item:
-        item.quantity += 1
+def add_to_cart(product_id):
+    # Grab the ID directly from Flask-Login
+    user_id = current_user.id
+    
+    # 1. Check if this exact product is ALREADY in the user's cart
+    existing_item = CartItem.query.filter_by(user_id=user_id, product_id=product_id).first()
+    
+    if existing_item:
+        # 2. If it is already there, just increase the quantity by 1!
+        existing_item.quantity += 1
     else:
-        new_item = CartItem(user_id=current_user.id, medicine_id=medicine_id)
+        # 3. If it is not there, create a new cart entry
+        new_item = CartItem(user_id=user_id, product_id=product_id, quantity=1)
         db.session.add(new_item)
+        
     db.session.commit()
-    flash('Added to cart!', 'success')
-    return redirect(request.referrer or url_for('home'))
+    flash('Item added to cart!')
+    
+    # Redirect the user back to the page they were just on
+    return redirect(request.referrer or url_for('search'))
 
 @app.route('/cart')
 @login_required
 def view_cart():
     items = CartItem.query.filter_by(user_id=current_user.id).all()
-    total = sum(item.medicine.selling_price * item.quantity for item in items if item.medicine.selling_price)
+    total = sum(item.product.selling_price * item.quantity for item in items if item.product.selling_price)
     return render_template('cart.html', items=items, total=total)
 
 @app.route('/remove_from_cart/<int:cart_id>')
