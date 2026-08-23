@@ -215,7 +215,17 @@ def search():
         ai_solution = "<strong style='color:red;'>Setup Required:</strong> You need to install the AI library. Run <code>pip install google-genai</code> in your terminal and restart the server."
     except Exception as e:
         print(f"AI Error: {e}")
-        ai_solution = f"<strong style='color:red;'>AI Error:</strong> {str(e)}<br><br><em>(Please ensure your API key is valid. Create a new key at <a href='https://aistudio.google.com/app/apikey' target='_blank'>Google AI Studio</a>.)</em>"
+        error_string = str(e)
+        
+        if "429" in error_string or "RESOURCE_EXHAUSTED" in error_string:
+            ai_solution = """
+            <div class="ai-card">
+                <h4 class="card-title">⏳ AI is Catching Its Breath</h4>
+                <p style="margin-bottom: 0; line-height: 1.5;">Our AI pharmacist is currently assisting other customers. Please wait about 30 seconds and click search again!</p>
+            </div>
+            """
+        else:
+            ai_solution = f"<strong style='color:red;'>AI Error:</strong> {error_string}<br><br><em>(Please ensure your API key is valid.)</em>"
     # -------------------------------
 
     # "AI-Lite" NLP: Remove conversational stop-words to parse natural language
