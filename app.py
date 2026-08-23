@@ -11,10 +11,21 @@ from functools import wraps
 from dotenv import load_dotenv
 from google import genai
 
-load_dotenv()
+load_dotenv(override=True)  # Load environment variables from .env file
+raw_key = os.getenv("GEMINI_API_KEY")
+
+if raw_key:
+    # .strip() completely removes any invisible spaces, tabs, or newlines
+    clean_key = raw_key.strip()
+    print(f"✅ DEBUG: AI Key loaded! Starts with: {clean_key[:7]}... Length: {len(clean_key)}")
+    client = genai.Client(api_key=clean_key)
+else:
+    print("🚨 CRITICAL ERROR: API Key is None! The .env file is completely missing or empty.")
+    # Fallback to prevent immediate crash, though AI will still fail
+    client = genai.Client(api_key="MISSING_KEY")
 
 # This fixes the "name 'client' is not defined" error for Gemini
-client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+# client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
 app = Flask(__name__)
 
