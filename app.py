@@ -1,6 +1,5 @@
 from itertools import product
 from flask import Flask, render_template, request, redirect, url_for, session, flash
-from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import or_, and_
 from sqlalchemy import text
@@ -28,6 +27,15 @@ else:
 
 # This fixes the "name 'client' is not defined" error for Gemini
 # client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+# 1. Define the exact path to your project folder FIRST
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# 2. Tell Python exactly where the .env file is hiding
+load_dotenv(os.path.join(basedir, '.env'))
+
+# 3. NOW it is safe to pull your hidden keys
+raw_key = os.getenv("GEMINI_API_KEY")
 
 app = Flask(__name__)
 
