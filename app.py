@@ -32,7 +32,6 @@ app = Flask(__name__)
 import os
 
 # Check if we are running on the live PythonAnywhere server
-Python
 import os
 basedir = os.path.abspath(os.path.dirname(__file__))
 
