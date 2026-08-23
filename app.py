@@ -24,7 +24,7 @@ import os
 if 'PYTHONANYWHERE_DOMAIN' in os.environ:
     # --- LIVE DATABASE CONNECTION ---
     # Replace <your_db_password> with your actual PythonAnywhere database password
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://YULIV:Yuliv123@YULIV.mysql.pythonanywhere-services.com/YULIV$yuliv_db'
+    app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://yuliv:Yuliv123@YULIV.mysql.pythonanywhere-services.com/yuliv$yuliv_db'
 else:
     # Format: mysql+pymysql://username:password@127.0.0.1:3306/database_name
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:Hanish5^611@127.0.0.1:3306/yuliv_db'
