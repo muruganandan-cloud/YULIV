@@ -163,17 +163,18 @@ def search():
 
         print(f"Successfully loaded model: {model_name}")
 
-        prompt = f"""You are a helpful expert pharmacy assistant. A customer is asking: '{query}'. 
-        First, provide a detailed overview of possible root causes and comprehensive lifestyle advice for this issue.
-        Then, suggest 5 to 6 real-world over-the-counter medicines (commonly available in India) for this issue.
-        Return ONLY raw HTML code (no markdown backticks, no ```html). Use this exact structure:
+        prompt = f"""You are an expert pharmacist at YuLiv Pharmacy. Analyze this customer search query: '{query}'.
         
+        CRITICAL INSTRUCTION: First, determine if the user is searching for a general SYMPTOM (e.g., headache, acne, stomach pain) OR a specific PRODUCT/BRAND (e.g., Dermaco, Niacinamide, Paracetamol).
+        
+        Return ONLY raw HTML code (no markdown backticks, no ```html). 
+        
+        IF IT IS A SYMPTOM, use this exact structure:
         <div class="ai-card">
             <h4 class="card-title">🩺 Understanding Your Symptoms</h4>
             <p style="margin-bottom: 12px; line-height: 1.5;"><strong>Possible Causes:</strong> [Provide a detailed 3-4 sentence explanation of root causes]</p>
             <p style="margin-bottom: 0; line-height: 1.5;"><strong>Lifestyle Advice:</strong> [Provide 3-4 detailed practical home remedies or lifestyle tips]</p>
         </div>
-        
         <div class="ai-card">
             <h4 class="card-title">💊 Suggested Medication</h4>
             <!-- Repeat the div below 5 to 6 times for different medicines -->
@@ -185,6 +186,26 @@ def search():
                 <p><strong>Use:</strong> [Brief description]</p>
             </div>
         </div>
+        
+        IF IT IS A PRODUCT OR BRAND, use this exact structure instead:
+        <div class="ai-card">
+            <h4 class="card-title">📦 Product Insights</h4>
+            <p style="margin-bottom: 12px; line-height: 1.5;"><strong>About this Search:</strong> [Explain what this product/brand is and what it is used for]</p>
+            <p style="margin-bottom: 0; line-height: 1.5;"><strong>Key Ingredients:</strong> [List main active ingredients]</p>
+        </div>
+        <div class="ai-card">
+            <h4 class="card-title">🔄 Similar Alternatives to Consider</h4>
+            <!-- Repeat the div below 4 to 5 times for different substitute brands -->
+            <div class="product-item">
+                <h5>[Alternative Brand Name]</h5>
+                <p><strong>Active Ingredient:</strong> [Ingredient]</p>
+                <p><strong>Pack Size:</strong> [Size]</p>
+                <p><strong>Estimated Price:</strong> [Price]</p>
+                <p><strong>Why it's a good substitute:</strong> [Brief reason why they should buy this instead]</p>
+            </div>
+        </div>
+        
+        Include this disclaimer at the very bottom regardless of which option you choose:
         <p style="grid-column: 1 / -1; color: #dc2626; font-size: 0.9em; font-style: italic; text-align: center; margin-top: 15px;">Disclaimer: Please consult a healthcare professional before taking any medication. Prices are estimates.</p>"""
         
         response = client.models.generate_content(model=model_name, contents=prompt)
