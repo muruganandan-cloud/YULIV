@@ -269,7 +269,7 @@ def search():
             ai_bottom = ""
 
     # 4. Final Step: Send BOTH the database 'results' AND the 'ai_solution' to the HTML template
-    return render_template('search_results.html', query=query, results=results, ai_top=ai_top, ai_bottom=ai_bottom)
+    return render_template('search_results.html', query=raw_query, results=results, ai_top=ai_top, ai_bottom=ai_bottom)
     # -------------------------------
 
     print(f"Inventory search: Query='{query}', Found=0. Showing AI context.")
