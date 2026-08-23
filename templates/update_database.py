@@ -1,45 +1,30 @@
 import csv
 import os
-from sqlalchemy import text
 from app import app, db, CartItem, Products
 
 CSV_FILENAME = 'inventory.csv'
 
 def update_system():
-    print("🔄 Starting YuLiv System Update...")
+    print("🔄 Starting YuLiv System Update (Clean Slate Mode)...")
     
     with app.app_context():
-        # --- PART 1: SCHEMA FIX ---
-        print("1. Rebuilding cart_items table...")
+        # --- PART 1: THE COMPLETE WIPE ---
+        print("1. Vaporizing old tables to guarantee zero duplicates...")
+        # We must drop CartItem first because it relies on the Products table
         CartItem.__table__.drop(db.engine, checkfirst=True)
-        CartItem.__table__.create(db.engine)
+        Products.__table__.drop(db.engine, checkfirst=True)
         
-        # --- PART 2: RAW SQL DEDUPLICATION (The Nuclear Option) ---
-        # This bypasses Python and forces the SQLite database to delete 
-        # all clones, keeping only the absolute oldest entry for each product name.
-        print("2. Destroying all duplicate clones in the database...")
-        try:
-            db.session.execute(text("""
-                DELETE FROM inventory 
-                WHERE id NOT IN (
-                    SELECT MIN(id) 
-                    FROM inventory 
-                    GROUP BY product_name
-                )
-            """))
-            db.session.commit()
-            print("   🗑️ Duplicates vaporized successfully!")
-        except Exception as e:
-            print(f"   ⚠️ Cleanup note: {e}")
-
-        # --- PART 3: SMART UPSERT ---
-        print("3. Starting Intelligent Inventory Sync (Upsert)...")
+        # --- PART 2: THE REBUILD ---
+        print("2. Rebuilding fresh, perfectly empty tables...")
+        db.create_all()
+        
+        # --- PART 3: THE CLEAN IMPORT ---
+        print("3. Importing exactly one fresh copy of your inventory...")
         if not os.path.exists(CSV_FILENAME):
             print(f"   ❌ Error: {CSV_FILENAME} not found.")
             return
 
         added_count = 0
-        updated_count = 0
 
         with open(CSV_FILENAME, mode='r', encoding='utf-8-sig') as f:
             reader = csv.DictReader(f)
@@ -60,36 +45,21 @@ def update_system():
                 except ValueError:
                     continue
 
-                # Use ILIKE to ignore all uppercase/lowercase differences
-                existing_product = Products.query.filter(Products.product_name.ilike(name)).first()
-
-                if existing_product:
-                    # Update existing item
-                    existing_product.product_name = name
-                    existing_product.mrp = mrp
-                    existing_product.selling_price = selling_price
-                    existing_product.discount = discount
-                    existing_product.stock = stock
-                    if ean:
-                        existing_product.ean_code = ean
-                    updated_count += 1
-                else:
-                    # Insert truly new item
-                    new_product = Products(
-                        ean_code=ean,
-                        product_name=name,
-                        mrp=mrp,
-                        selling_price=selling_price,
-                        discount=discount,
-                        stock=stock
-                    )
-                    db.session.add(new_product)
-                    added_count += 1
+                # Because we wiped the table, we don't even need to check for duplicates!
+                # We just insert the fresh data directly.
+                new_product = Products(
+                    ean_code=ean,
+                    product_name=name,
+                    mrp=mrp,
+                    selling_price=selling_price,
+                    discount=discount,
+                    stock=stock
+                )
+                db.session.add(new_product)
+                added_count += 1
 
         db.session.commit()
-        print(f"✅ Inventory sync complete: {added_count} newly added, {updated_count} updated.")
-        
-        db.create_all()
+        print(f"✅ Clean Slate Import complete: Exactly {added_count} products loaded.")
         print("🚀 System update finished successfully!")
 
 if __name__ == '__main__':
