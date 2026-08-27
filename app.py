@@ -397,27 +397,37 @@ def shop_by_category(category_name):
     # We redirect the category click directly into your powerful AI search logic!
     return redirect(url_for('search', q=category_name))
 
-@app.route('/add_to_cart/<int:product_id>')
+@app.route('/add_to_cart/<int:product_id>', methods=['GET', 'POST'])
 @login_required
 def add_to_cart(product_id):
-    # Grab the ID directly from Flask-Login
+    # Grab the ID directly from Flask-Login (Preserved)
     user_id = current_user.id
     
-    # 1. Check if this exact product is ALREADY in the user's cart
+    # Default quantity is 1 (Preserves your old button functionality)
+    added_qty = 1
+    
+    # If the user submitted the new + / - form, safely grab their specific number
+    if request.method == 'POST':
+        try:
+            added_qty = int(request.form.get('quantity', 1))
+        except ValueError:
+            added_qty = 1
+    
+    # 1. Check if this exact product is ALREADY in the user's cart (Preserved)
     existing_item = CartItem.query.filter_by(user_id=user_id, product_id=product_id).first()
     
     if existing_item:
-        # 2. If it is already there, just increase the quantity by 1!
-        existing_item.quantity += 1
+        # 2. If it is already there, increase by the selected quantity
+        existing_item.quantity += added_qty
     else:
-        # 3. If it is not there, create a new cart entry
-        new_item = CartItem(user_id=user_id, product_id=product_id, quantity=1)
+        # 3. If it is not there, create a new cart entry with the selected quantity
+        new_item = CartItem(user_id=user_id, product_id=product_id, quantity=added_qty)
         db.session.add(new_item)
         
     db.session.commit()
     flash('Item added to cart!')
     
-    # Redirect the user back to the page they were just on
+    # Redirect the user back to the page they were just on (Preserved)
     return redirect(request.referrer or url_for('search'))
 
 @app.route('/cart')
