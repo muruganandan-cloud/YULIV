@@ -1,90 +1,146 @@
 {% extends "base.html" %}
 {% block content %}
 
-<div class="search-page-wrapper">
-    
-    <h2 class="search-title">
-        Search Results for <span>"{{ query }}"</span>
-    </h2>
+<!-- SPLIT SCREEN WRAPPER -->
+<div style="display: flex; gap: 20px; align-items: flex-start; position: relative;">
 
-    <!-- 1. TOP SECTION: AI Health Insights -->
-    {% if ai_top %}
-    <div class="ai-dashboard" style="margin-bottom: 30px;">
-        <div class="ai-dashboard-header">
-            <h3>✨ Personalized AI Health Insights</h3>
-        </div>
-        <div class="ai-grid-container">
-            {{ ai_top|safe }}
-        </div>
-    </div>
-    {% endif %}
+    <!-- ========================================== -->
+    <!-- LEFT COLUMN: MAIN SEARCH RESULTS (70% width) -->
+    <!-- ========================================== -->
+    <div class="search-page-wrapper" style="flex: 1;">
+        
+        <h2 class="search-title">Search Results for <span>"{{ query }}"</span></h2>
 
-    <!-- 2. MIDDLE SECTION: Physical Store Inventory -->
-    {% if results %}
-    <h3 class="search-title" style="margin-top: 20px; font-size: 1.5rem;">Available in Our Store</h3>
-    <div class="ai-grid-container" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
-        {% for med in results %}
-        <div class="ai-card" style="margin-bottom: 20px;">
-            <div class="product-item" style="border: none; background: transparent; padding: 0;">
-                <h5 style="color: #0d9488; font-size: 1.15rem; margin-bottom: 10px;">{{ med.product_name }}</h5>
-                {% if med.ean_code %}
-                    <p><strong>Product Code:</strong> {{ med.ean_code }}</p>
-                {% endif %}
-                <p><strong>MRP:</strong> ₹{{ med.product_price }}</p>
-                <p><strong>Selling Price:</strong> ₹{{ med.selling_price }}</p>
-                {% if med.discount %}
-                    <p><strong>Discount:</strong> {{ med.discount }}%</p>
-                {% endif %}
-                
-                {% if med.inventory_qty and med.inventory_qty > 0 %}
-                    <p style="color: #16a34a; font-weight: bold;">In Stock: {{ med.inventory_qty }}</p>
+        {% if ai_top %}
+        <div class="ai-dashboard" style="margin-bottom: 30px;">
+            <div class="ai-dashboard-header">
+                <h3>✨ Personalized AI Health Insights</h3>
+            </div>
+            <div class="ai-grid-container">
+                {{ ai_top|safe }}
+            </div>
+        </div>
+        {% endif %}
+
+        {% if results %}
+        <h3 class="search-title" style="margin-top: 20px; font-size: 1.5rem;">Available in Our Store</h3>
+        <div class="ai-grid-container" style="grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));">
+            
+            {% for med in results %}
+            <div class="ai-card" style="margin-bottom: 20px;">
+                <div class="product-item" style="border: none; background: transparent; padding: 0;">
+                    <h5 style="color: #0d9488; font-size: 1.15rem; margin-bottom: 10px;">{{ med.product_name }}</h5>
                     
-                    <!-- NEW QUANTITY SELECTOR FORM -->
-                    <form action="{{ url_for('add_to_cart', product_id=med.id) }}" method="POST" style="display: flex; gap: 10px; align-items: center; margin-top: 15px;">
+                    <!-- DYNAMIC CART INDICATOR -->
+                    {% if med.id in cart_qtys %}
+                        <div style="background-color: #fef08a; color: #854d0e; padding: 6px 12px; border-radius: 4px; font-size: 0.9rem; margin-bottom: 10px; font-weight: bold;">
+                            🛒 {{ cart_qtys[med.id] }} currently in your cart
+                        </div>
+                    {% endif %}
+
+                    {% if med.ean_code %}
+                        <p><strong>Product Code:</strong> {{ med.ean_code }}</p>
+                    {% endif %}
+                    <p><strong>MRP:</strong> ₹{{ med.product_price }}</p>
+                    <p><strong>Selling Price:</strong> ₹{{ med.selling_price }}</p>
+                    {% if med.discount %}
+                        <p><strong>Discount:</strong> {{ med.discount }}%</p>
+                    {% endif %}
+                    
+                    {% if med.inventory_qty and med.inventory_qty > 0 %}
+                        <p style="color: #16a34a; font-weight: bold;">In Stock: {{ med.inventory_qty }}</p>
                         
-                         <!-- NEW QUANTITY SELECTOR & MULTI-ACTION FORM -->
-        <form action="{{ url_for('add_to_cart', product_id=med.id) }}" method="POST" style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
-    
-             <!-- +/- UI -->
-                <div style="display: flex; align-items: center; border: 1px solid #ccc; border-radius: 5px; overflow: hidden; background: #fff;">
-                <button type="button" onclick="decrementQty(this)" style="padding: 5px 12px; border: none; background: #f0f0f0; cursor: pointer; font-size: 16px;">-</button>
-                <input type="number" name="quantity" value="1" min="1" max="{{ med.inventory_qty }}" style="width: 40px; text-align: center; border: none; font-size: 16px; pointer-events: none; background: transparent;">
-                <button type="button" onclick="incrementQty(this)" style="padding: 5px 12px; border: none; background: #f0f0f0; cursor: pointer; font-size: 16px;">+</button>
+                        <form action="{{ url_for('add_to_cart', product_id=med.id) }}" method="POST" style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
+                            <div style="display: flex; align-items: center; border: 1px solid #ccc; border-radius: 5px; overflow: hidden; background: #fff;">
+                                <button type="button" onclick="decrementQty(this)" style="padding: 5px 12px; border: none; background: #f0f0f0; cursor: pointer; font-size: 16px;">-</button>
+                                <input type="number" name="quantity" value="1" min="1" max="{{ med.inventory_qty }}" style="width: 40px; text-align: center; border: none; font-size: 16px; pointer-events: none; background: transparent;">
+                                <button type="button" onclick="incrementQty(this)" style="padding: 5px 12px; border: none; background: #f0f0f0; cursor: pointer; font-size: 16px;">+</button>
+                            </div>
+                            <div style="display: flex; gap: 8px;">
+                                <button type="submit" name="action" value="cart" style="background-color: #0d9488; border: none; color: white; padding: 8px 16px; border-radius: 25px; cursor: pointer; font-weight: 600;">
+                                    Add to Cart
+                                </button>
+                                <button type="submit" name="action" value="buy" style="background-color: #f97316; border: none; color: white; padding: 8px 16px; border-radius: 25px; cursor: pointer; font-weight: 600;">
+                                    Buy Now
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <p style="color: #dc2626; font-weight: bold;">Out of Stock</p>
+                    {% endif %}
+                </div>
             </div>
+            {% endfor %}
 
-         <!-- The button container to keep them side-by-side -->
-                 <div style="display: flex; gap: 8px;">
-        <!-- Add to Cart Submit (Notice the name="action" value="cart") -->
-                 <button type="submit" name="action" value="cart" style="background-color: #0d9488; border: none; color: white; padding: 8px 16px; border-radius: 25px; cursor: pointer; font-weight: 600;">
-             Add to Cart
-                 </button>
+        </div>
+        {% endif %}
 
-        <!-- Buy Now Submit (Notice the name="action" value="buy" and the contrasting Orange color) -->
-                 <button type="submit" name="action" value="buy" style="background-color: #f97316; border: none; color: white; padding: 8px 16px; border-radius: 25px; cursor: pointer; font-weight: 600;">
-                  Buy Now
-                 </button>
+        {% if ai_bottom %}
+        <div class="ai-dashboard" style="margin-top: 40px;">
+            <div class="ai-dashboard-header">
+                <h3>🔄 Similar Alternatives to Consider</h3>
             </div>
-        </form>
-                {% else %}
-                    <p style="color: #dc2626; font-weight: bold;">Out of Stock</p>
-                {% endif %}
+            <div class="ai-grid-container">
+                {{ ai_bottom|safe }}
             </div>
         </div>
-        {% endfor %}
+        {% endif %}
+
     </div>
-    {% endif %}
 
-    <!-- 3. BOTTOM SECTION: AI Alternative Suggestions -->
-    {% if ai_bottom %}
-    <div class="ai-dashboard" style="margin-top: 40px;">
-        <div class="ai-dashboard-header">
-            <h3>🔄 Similar Alternatives to Consider</h3>
-        </div>
-        <div class="ai-grid-container">
-            {{ ai_bottom|safe }}
-        </div>
+    <!-- ========================================== -->
+    <!-- RIGHT COLUMN: STICKY CART/CHECKOUT PANE (300px) -->
+    <!-- ========================================== -->
+    <div style="width: 350px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto; box-shadow: -4px 0 15px rgba(0,0,0,0.05);">
+        
+        {% if checkout_mode %}
+            <!-- CHECKOUT VIEW -->
+            <h3 style="color: #f97316; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px;">Secure Checkout</h3>
+            
+            <div style="margin-bottom: 20px;">
+                <h4 style="font-size: 1rem; margin-bottom: 10px;">1. Delivery Address</h4>
+                <p style="font-size: 0.9rem; color: #475569;">YuLiv Pharmacy Delivery Zone<br>Coimbatore, TN 641046</p>
+                <a href="#" style="color: #0d9488; font-size: 0.85rem;">Edit Address</a>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <h4 style="font-size: 1rem; margin-bottom: 10px;">2. Payment Method</h4>
+                <div style="font-size: 0.9rem; color: #475569; display: flex; flex-direction: column; gap: 8px;">
+                    <label><input type="radio" name="payment" checked> UPI / GPay</label>
+                    <label><input type="radio" name="payment"> Credit / Debit Card</label>
+                    <label><input type="radio" name="payment"> Cash on Delivery</label>
+                </div>
+            </div>
+
+            <button style="width: 100%; background-color: #f97316; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
+                Place Order
+            </button>
+            <div style="text-align: center; margin-top: 15px;">
+                <a href="{{ url_for('search', q=query) }}" style="color: #64748b; font-size: 0.9rem; text-decoration: none;">← Back to Cart</a>
+            </div>
+
+        {% else %}
+            <!-- CART VIEW -->
+            <h3 style="color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px; margin-bottom: 20px;">Your Cart</h3>
+            
+            {% if cart_items %}
+                <ul style="list-style: none; padding: 0; margin: 0 0 20px 0;">
+                    {% for item in cart_items %}
+                    <li style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px;">
+                        <!-- Note: If you don't have a db.relationship set up for product_name, you may need to fetch the product name differently in app.py -->
+                        <div style="font-weight: 600; font-size: 0.95rem; color: #1e293b;">Product ID: {{ item.product_id }}</div>
+                        <div style="color: #64748b; font-size: 0.9rem;">Qty: {{ item.quantity }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <a href="{{ url_for('search', q=query, checkout='true') }}" style="display: block; text-align: center; width: 100%; background-color: #f97316; color: white; padding: 12px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer;">
+                    Proceed to Checkout
+                </a>
+            {% else %}
+                <p style="color: #64748b; text-align: center; margin-top: 50px;">Your cart is currently empty.</p>
+            {% endif %}
+        {% endif %}
     </div>
-    {% endif %}
 
 </div>
 

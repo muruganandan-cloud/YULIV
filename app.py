@@ -268,8 +268,30 @@ def search():
             ai_top = f"<strong style='color:red;'>AI Error:</strong> {error_string}"
             ai_bottom = ""
 
+        # --- NEW: Fetch Cart Data for the Right Pane ---
+    cart_items = []
+    cart_qtys = {}
+    checkout_mode = request.args.get('checkout') == 'true'
+    
+    # Assuming you are using Flask-Login's current_user
+    if current_user.is_authenticated:
+        cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
+        # Create a quick dictionary to check if a product is in the cart
+        for item in cart_items:
+            cart_qtys[item.product_id] = item.quantity
+
+    # Update your return statement to include these new variables!
+    return render_template('search_results.html', 
+                           query=raw_query, 
+                           results=results, 
+                           ai_top=ai_top, 
+                           ai_bottom=ai_bottom,
+                           cart_items=cart_items,
+                           cart_qtys=cart_qtys,
+                           checkout_mode=checkout_mode)
+
     # 4. Final Step: Send BOTH the database 'results' AND the 'ai_solution' to the HTML template
-    return render_template('search_results.html', query=raw_query, results=results, ai_top=ai_top, ai_bottom=ai_bottom)
+    # return render_template('search_results.html', query=raw_query, results=results, ai_top=ai_top, ai_bottom=ai_bottom)
     # -------------------------------
 
     print(f"Inventory search: Query='{query}', Found=0. Showing AI context.")
@@ -425,14 +447,12 @@ def add_to_cart(product_id):
         
     db.session.commit()
     
-    # THE NEW ROUTING LOGIC:
+   # THE NEW ROUTING LOGIC:
     if action == 'buy':
-        # If they clicked Buy Now, send them straight to the cart to check out
-        # (Note: If your cart page is named something else like 'view_cart', change the word 'cart' below!)
         flash('Proceeding to checkout!', 'success')
-        return redirect(url_for('cart')) 
+        # Redirect back to search, but turn on the checkout pane
+        return redirect(url_for('search', checkout='true')) 
     else:
-        # If they clicked Add to Cart, just silently add it and keep them shopping
         flash('Item added to cart!', 'success')
         return redirect(request.referrer or url_for('search'))
     
