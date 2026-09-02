@@ -268,19 +268,46 @@ def search():
             ai_top = f"<strong style='color:red;'>AI Error:</strong> {error_string}"
             ai_bottom = ""
 
-        # --- NEW: Fetch Cart Data for the Right Pane ---
+# --- ENHANCED: Fetch Detailed Cart Data & Calculate Savings ---
     cart_items = []
     cart_qtys = {}
+    cart_details = []  
+    cart_total = 0     
+    total_savings = 0  # NEW: Tracks the customer's total savings
     checkout_mode = request.args.get('checkout') == 'true'
     
-    # Assuming you are using Flask-Login's current_user
     if current_user.is_authenticated:
         cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
-        # Create a quick dictionary to check if a product is in the cart
         for item in cart_items:
             cart_qtys[item.product_id] = item.quantity
+            
+            product = Products.query.get(item.product_id)
+            if product:
+                # 1. Grab MRP and Discount, default to 0 if missing
+                mrp = product.mrp if product.mrp else 0
+                discount_pct = product.discount if product.discount else 0
+                
+                # 2. Calculate the exact YuLiv Price
+                discount_amount = mrp * (discount_pct / 100)
+                yuliv_price = mrp - discount_amount
+                
+                # 3. Calculate line totals
+                item_total = yuliv_price * item.quantity
+                item_savings = discount_amount * item.quantity
+                
+                # 4. Add to Grand Totals
+                cart_total += item_total
+                total_savings += item_savings
+                
+                # 5. Pass it all to the HTML
+                cart_details.append({
+                    'name': product.product_name,
+                    'mrp': mrp,
+                    'yuliv_price': round(yuliv_price, 2),
+                    'qty': item.quantity,
+                    'total': round(item_total, 2)
+                })
 
-    # Update your return statement to include these new variables!
     return render_template('search_results.html', 
                            query=raw_query, 
                            results=results, 
@@ -288,6 +315,9 @@ def search():
                            ai_bottom=ai_bottom,
                            cart_items=cart_items,
                            cart_qtys=cart_qtys,
+                           cart_details=cart_details,
+                           cart_total=round(cart_total, 2),
+                           total_savings=round(total_savings, 2),
                            checkout_mode=checkout_mode)
 
     # 4. Final Step: Send BOTH the database 'results' AND the 'ai_solution' to the HTML template
