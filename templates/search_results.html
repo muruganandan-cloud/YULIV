@@ -41,14 +41,22 @@
                     {% if med.ean_code %}
                         <p><strong>Product Code:</strong> {{ med.ean_code }}</p>
                     {% endif %}
-                    <p><strong>MRP:</strong> ₹{{ med.product_price }}</p>
-                    <p><strong>Selling Price:</strong> ₹{{ med.selling_price }}</p>
-                    {% if med.discount %}
-                        <p><strong>Discount:</strong> {{ med.discount }}%</p>
+                    
+                    <!-- NEW: Dynamic Pricing & Discount Calculation -->
+                    <p style="text-decoration: line-through; color: #64748b;"><strong>MRP:</strong> ₹{{ med.product_price }}</p>
+                    
+                    {% set discount_pct = med.discount if med.discount else 0 %}
+                    {% set discount_amount = (med.product_price * (discount_pct / 100)) %}
+                    {% set yuliv_price = med.product_price - discount_amount %}
+                    
+                    <p style="color: #0d9488; font-size: 1.1rem;"><strong>YuLiv Price:</strong> ₹{{ yuliv_price | round(2) }}</p>
+                    
+                    {% if med.discount and med.discount > 0 %}
+                        <p style="color: #f97316; font-weight: bold;"><strong>Discount:</strong> {{ med.discount }}% Off</p>
                     {% endif %}
                     
                     {% if med.inventory_qty and med.inventory_qty > 0 %}
-                        <p style="color: #16a34a; font-weight: bold;">In Stock: {{ med.inventory_qty }}</p>
+                        <p style="color: #16a34a; font-weight: bold; margin-top: 10px;">In Stock: {{ med.inventory_qty }}</p>
                         
                         <form action="{{ url_for('add_to_cart', product_id=med.id) }}" method="POST" style="display: flex; gap: 10px; align-items: center; margin-top: 15px; flex-wrap: wrap;">
                             <div style="display: flex; align-items: center; border: 1px solid #ccc; border-radius: 5px; overflow: hidden; background: #fff;">
@@ -91,7 +99,6 @@
     <!-- ========================================== -->
     <!-- RIGHT COLUMN: STICKY CART/CHECKOUT PANE -->
     <!-- ========================================== -->
-    <!-- NEW: Only show this entire column IF there are items in the cart OR we are in checkout mode -->
     {% if cart_items or checkout_mode %}
     <div style="width: 350px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto; box-shadow: -4px 0 15px rgba(0,0,0,0.05);">
         
@@ -99,6 +106,13 @@
             <!-- CHECKOUT VIEW -->
             <h3 style="color: #f97316; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px;">Secure Checkout</h3>
             
+            <!-- NEW: The Savings Banner -->
+            {% if total_savings > 0 %}
+            <div style="background-color: #dcfce7; color: #166534; padding: 12px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; text-align: center; border: 1px solid #bbf7d0;">
+                🎉 You save ₹{{ total_savings }} on this order!
+            </div>
+            {% endif %}
+
             <div style="margin-bottom: 20px;">
                 <h4 style="font-size: 1rem; margin-bottom: 10px;">1. Delivery Address</h4>
                 <p style="font-size: 0.9rem; color: #475569;">YuLiv Pharmacy Delivery Zone<br>Coimbatore, TN 641046</p>
@@ -114,11 +128,11 @@
                 </div>
             </div>
 
+            <!-- NEW: Dynamic Pay Button -->
             <button style="width: 100%; background-color: #f97316; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
-                Place Order
+                Pay ₹{{ cart_total }} & Place Order
             </button>
             <div style="text-align: center; margin-top: 15px;">
-                <!-- NEW: Clear the checkout flag to return to the normal cart -->
                 <a href="{{ url_for('search', q=query) }}" style="color: #64748b; font-size: 0.9rem; text-decoration: none;">← Back to Cart</a>
             </div>
 
@@ -127,13 +141,26 @@
             <h3 style="color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px; margin-bottom: 20px;">Your Cart</h3>
             
             <ul style="list-style: none; padding: 0; margin: 0 0 20px 0;">
-                {% for item in cart_items %}
-                <li style="border-bottom: 1px solid #e2e8f0; padding-bottom: 10px; margin-bottom: 10px;">
-                    <div style="font-weight: 600; font-size: 0.95rem; color: #1e293b;">Product ID: {{ item.product_id }}</div>
-                    <div style="color: #64748b; font-size: 0.9rem;">Qty: {{ item.quantity }}</div>
+                <!-- NEW: Iterating through detailed cart data -->
+                {% for item in cart_details %}
+                <li style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start;">
+                    <div style="flex: 1; padding-right: 15px;">
+                        <div style="font-weight: 600; font-size: 0.90rem; color: #1e293b; line-height: 1.3; margin-bottom: 4px;">{{ item.name }}</div>
+                        <div style="color: #64748b; font-size: 0.85rem;">Qty: {{ item.qty }} x ₹{{ item.yuliv_price }}</div>
+                    </div>
+                    <div style="font-weight: bold; color: #0d9488; font-size: 0.95rem;">
+                        ₹{{ item.total }}
+                    </div>
                 </li>
                 {% endfor %}
             </ul>
+            
+            <!-- NEW: GRAND TOTAL SECTION -->
+            <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b;">
+                <span>Total:</span>
+                <span>₹{{ cart_total }}</span>
+            </div>
+
             <a href="{{ url_for('search', q=query, checkout='true') }}" style="display: block; text-align: center; width: 100%; background-color: #f97316; color: white; padding: 12px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer;">
                 Proceed to Checkout
             </a>
