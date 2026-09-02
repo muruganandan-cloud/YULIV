@@ -284,7 +284,7 @@ def search():
             product = Products.query.get(item.product_id)
             if product:
                 # 1. Grab MRP and Discount, default to 0 if missing
-                mrp = product.mrp if product.product_price else 0
+                mrp = product.product_price if product.product_price else 0
                 discount_pct = product.discount if product.discount else 0
                 
                 # 2. Calculate the exact YuLiv Price
