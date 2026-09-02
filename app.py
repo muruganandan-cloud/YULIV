@@ -272,7 +272,6 @@ def search():
     cart_items = []
     cart_qtys = {}
     cart_details = []  
-    mrp = 0
     cart_total = 0     
     total_savings = 0  # NEW: Tracks the customer's total savings
     checkout_mode = request.args.get('checkout') == 'true'
@@ -285,12 +284,12 @@ def search():
             product = Products.query.get(item.product_id)
             if product:
                 # 1. Grab MRP and Discount, default to 0 if missing
-                mrp = product.mrp if product.mrp else 0
+                mrp = product.mrp if product.product_price else 0
                 discount_pct = product.discount if product.discount else 0
                 
                 # 2. Calculate the exact YuLiv Price
-                discount_amount = mrp * (discount_pct / 100)
-                yuliv_price = mrp - discount_amount
+                discount_amount = product.product_price * (discount_pct / 100)
+                yuliv_price = product.product_price - discount_amount
                 
                 # 3. Calculate line totals
                 item_total = yuliv_price * item.quantity
