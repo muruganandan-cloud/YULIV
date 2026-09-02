@@ -42,17 +42,17 @@
                         <p><strong>Product Code:</strong> {{ med.ean_code }}</p>
                     {% endif %}
                     
-                    <!-- NEW: Dynamic Pricing & Discount Calculation -->
-                    <p style="text-decoration: line-through; color: #64748b;"><strong>MRP:</strong> ₹{{ med.product_price }}</p>
+                    <!-- NEW: Dynamic Pricing & Discount Calculation (Rounded to Integers) -->
+                    <p style="text-decoration: line-through; color: #64748b;"><strong>MRP:</strong> ₹{{ med.product_price | round | int }}</p>
                     
                     {% set discount_pct = med.discount if med.discount else 0 %}
                     {% set discount_amount = (med.product_price * (discount_pct / 100)) %}
                     {% set yuliv_price = med.product_price - discount_amount %}
                     
-                    <p style="color: #0d9488; font-size: 1.1rem;"><strong>YuLiv Price:</strong> ₹{{ yuliv_price | round(2) }}</p>
+                    <p style="color: #0d9488; font-size: 1.1rem;"><strong>YuLiv Price:</strong> ₹{{ yuliv_price | round | int }}</p>
                     
                     {% if med.discount and med.discount > 0 %}
-                        <p style="color: #f97316; font-weight: bold;"><strong>Discount:</strong> {{ med.discount }}% Off</p>
+                        <p style="color: #f97316; font-weight: bold;"><strong>Discount:</strong> {{ med.discount | round | int }}% Off</p>
                     {% endif %}
                     
                     {% if med.inventory_qty and med.inventory_qty > 0 %}
