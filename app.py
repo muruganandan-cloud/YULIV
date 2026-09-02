@@ -302,7 +302,7 @@ def search():
                 # 5. Pass it all to the HTML
                 cart_details.append({
                     'name': product.product_name,
-                    'mrp': mrp,
+                    'product_price': product.product_price,
                     'yuliv_price': round(yuliv_price, 2),
                     'qty': item.quantity,
                     'total': round(item_total, 2)
