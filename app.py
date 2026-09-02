@@ -272,6 +272,7 @@ def search():
     cart_items = []
     cart_qtys = {}
     cart_details = []  
+    mrp = 0
     cart_total = 0     
     total_savings = 0  # NEW: Tracks the customer's total savings
     checkout_mode = request.args.get('checkout') == 'true'
