@@ -316,8 +316,8 @@ def search():
                            cart_items=cart_items,
                            cart_qtys=cart_qtys,
                            cart_details=cart_details,
-                           cart_total=round(cart_total, 2),
-                           total_savings=round(total_savings, 2),
+                           cart_total=int(round(cart_total, 2)),
+                           total_savings=int(round(total_savings, 2)),
                            checkout_mode=checkout_mode)
 
     # 4. Final Step: Send BOTH the database 'results' AND the 'ai_solution' to the HTML template
@@ -488,10 +488,46 @@ def add_to_cart(product_id):
     
 @app.route('/cart')
 @login_required
-def view_cart():
-    items = CartItem.query.filter_by(user_id=current_user.id).all()
-    total = sum(item.product.selling_price * item.quantity for item in items if item.product.selling_price)
-    return render_template('cart.html', items=items, total=total)
+def cart():
+    cart_items = CartItem.query.filter_by(user_id=current_user.id).all()
+    
+    cart_details = []
+    cart_total = 0
+    total_savings = 0
+    
+    for item in cart_items:
+        product = Products.query.get(item.product_id)
+        if product:
+            # 1. Grab Product Price and Discount
+            mrp = product.product_price if product.product_price else 0
+            discount_pct = product.discount if product.discount else 0
+            
+            # 2. Calculate the exact YuLiv Price
+            discount_amount = mrp * (discount_pct / 100)
+            yuliv_price = mrp - discount_amount
+            
+            # 3. Calculate line totals
+            item_total = yuliv_price * item.quantity
+            item_savings = discount_amount * item.quantity
+            
+            # 4. Add to Grand Totals
+            cart_total += item_total
+            total_savings += item_savings
+            
+            # 5. Build the dictionary for the HTML
+            cart_details.append({
+                'cart_item_id': item.id, # Needed for your 'Remove' button
+                'name': product.product_name,
+                'mrp': int(round(mrp)),
+                'yuliv_price': int(round(yuliv_price)),
+                'qty': item.quantity,
+                'line_total': int(round(item_total))
+            })
+
+    return render_template('cart.html', 
+                           cart_details=cart_details, 
+                           cart_total=int(round(cart_total)),
+                           total_savings=int(round(total_savings)))
 
 @app.route('/remove_from_cart/<int:cart_id>')
 @login_required
