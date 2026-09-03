@@ -1,6 +1,21 @@
 {% extends "base.html" %}
 {% block content %}
 
+<!-- NEW: CSS to force AI Insights to stretch full width instead of squeezing into a grid -->
+<style>
+    .ai-full-width-wrapper {
+        display: block;
+        width: 100%;
+        padding: 15px;
+    }
+    .ai-full-width-wrapper .ai-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        box-sizing: border-box;
+    }
+</style>
+
 <!-- SPLIT SCREEN WRAPPER -->
 <div style="display: flex; gap: 20px; align-items: flex-start; position: relative;">
 
@@ -16,7 +31,8 @@
             <div class="ai-dashboard-header">
                 <h3>✨ Personalized AI Health Insights</h3>
             </div>
-            <div class="ai-grid-container">
+            <!-- FIXED: Swapped grid container for full-width wrapper -->
+            <div class="ai-full-width-wrapper">
                 {{ ai_top|safe }}
             </div>
         </div>
@@ -88,7 +104,8 @@
             <div class="ai-dashboard-header">
                 <h3>🔄 Similar Alternatives to Consider</h3>
             </div>
-            <div class="ai-grid-container">
+            <!-- FIXED: Swapped grid container for full-width wrapper -->
+            <div class="ai-full-width-wrapper">
                 {{ ai_bottom|safe }}
             </div>
         </div>
