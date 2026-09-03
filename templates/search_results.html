@@ -42,8 +42,8 @@
                         <p><strong>Product Code:</strong> {{ med.ean_code }}</p>
                     {% endif %}
                     
-                    <!-- NEW: Dynamic Pricing & Discount Calculation (Rounded to Integers) -->
-                    <p style="text-decoration: line-through; color: #64748b;"><strong>MRP:</strong> ₹{{ med.product_price | round | int }}</p>
+                    <!-- FIXED: Strikethrough now only applies to the number, not the word "MRP" -->
+                    <p style="color: #64748b;"><strong>MRP:</strong> <span style="text-decoration: line-through;">₹{{ med.product_price | round | int }}</span></p>
                     
                     {% set discount_pct = med.discount if med.discount else 0 %}
                     {% set discount_amount = (med.product_price * (discount_pct / 100)) %}
@@ -106,10 +106,9 @@
             <!-- CHECKOUT VIEW -->
             <h3 style="color: #f97316; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px;">Secure Checkout</h3>
             
-            <!-- NEW: The Savings Banner -->
-            {% if total_savings > 0 %}
+            {% if total_savings and total_savings > 0 %}
             <div style="background-color: #dcfce7; color: #166534; padding: 12px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; text-align: center; border: 1px solid #bbf7d0;">
-                🎉 You save ₹{{ total_savings }} on this order!
+                🎉 You save ₹{{ total_savings | round | int }} on this order!
             </div>
             {% endif %}
 
@@ -128,9 +127,9 @@
                 </div>
             </div>
 
-            <!-- NEW: Dynamic Pay Button -->
+            <!-- FIXED: Forced Integer on Checkout Button -->
             <button style="width: 100%; background-color: #f97316; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
-                Pay ₹{{ cart_total }} & Place Order
+                Pay ₹{{ cart_total | round | int }} & Place Order
             </button>
             <div style="text-align: center; margin-top: 15px;">
                 <a href="{{ url_for('search', q=query) }}" style="color: #64748b; font-size: 0.9rem; text-decoration: none;">← Back to Cart</a>
@@ -141,24 +140,25 @@
             <h3 style="color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px; margin-bottom: 20px;">Your Cart</h3>
             
             <ul style="list-style: none; padding: 0; margin: 0 0 20px 0;">
-                <!-- NEW: Iterating through detailed cart data -->
                 {% for item in cart_details %}
                 <li style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start;">
                     <div style="flex: 1; padding-right: 15px;">
                         <div style="font-weight: 600; font-size: 0.90rem; color: #1e293b; line-height: 1.3; margin-bottom: 4px;">{{ item.name }}</div>
-                        <div style="color: #64748b; font-size: 0.85rem;">Qty: {{ item.qty }} x ₹{{ item.yuliv_price }}</div>
+                        <!-- FIXED: Forced Integer on Cart Line Items -->
+                        <div style="color: #64748b; font-size: 0.85rem;">Qty: {{ item.qty }} x ₹{{ item.yuliv_price | round | int }}</div>
                     </div>
                     <div style="font-weight: bold; color: #0d9488; font-size: 0.95rem;">
-                        ₹{{ item.total }}
+                        <!-- FIXED: Forced Integer on Line Total -->
+                        ₹{{ item.total | round | int }}
                     </div>
                 </li>
                 {% endfor %}
             </ul>
             
-            <!-- NEW: GRAND TOTAL SECTION -->
             <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b;">
                 <span>Total:</span>
-                <span>₹{{ cart_total }}</span>
+                <!-- FIXED: Forced Integer on Grand Total -->
+                <span>₹{{ cart_total | round | int }}</span>
             </div>
 
             <a href="{{ url_for('search', q=query, checkout='true') }}" style="display: block; text-align: center; width: 100%; background-color: #f97316; color: white; padding: 12px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer;">
