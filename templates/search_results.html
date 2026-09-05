@@ -119,7 +119,7 @@
     {% if cart_items or checkout_mode %}
     <div style="width: 350px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto; box-shadow: -4px 0 15px rgba(0,0,0,0.05);">
         
-        {% if checkout_mode %}
+{% if checkout_mode %}
             <!-- CHECKOUT VIEW -->
             <h3 style="color: #f97316; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px;">Secure Checkout</h3>
             
@@ -129,32 +129,43 @@
             </div>
             {% endif %}
 
-            <div style="margin-bottom: 20px;">
-                <h4 style="font-size: 1rem; margin-bottom: 10px;">1. Delivery Address</h4>
-                <p style="font-size: 0.9rem; color: #475569;">YuLiv Pharmacy Delivery Zone<br>Coimbatore, TN 641046</p>
-                <a href="#" style="color: #0d9488; font-size: 0.85rem;">Edit Address</a>
-            </div>
+            <!-- NEW: Address Collection Form -->
+            <form id="checkout-form" method="POST" action="{{ url_for('payment_success') }}">
+                
+                <div style="margin-bottom: 20px;">
+                    <h4 style="font-size: 1rem; margin-bottom: 10px; color: #1e293b;">1. Delivery & Contact Info</h4>
+                    
+                    <input type="text" name="customer_name" placeholder="Full Name" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit;">
+                    
+                    <input type="tel" name="customer_phone" placeholder="Mobile Number" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit;">
+                    
+                    <textarea name="shipping_address" placeholder="Shipping Address (Door No, Street, Locality, Pincode)" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit; resize: vertical; min-height: 70px;"></textarea>
 
-            <!-- <div style="margin-bottom: 20px;">
-                <h4 style="font-size: 1rem; margin-bottom: 10px;">2. Payment Method</h4>
-                <div style="font-size: 0.9rem; color: #475569; display: flex; flex-direction: column; gap: 8px;">
-                    <label><input type="radio" name="payment" checked> UPI / GPay</label>
-                    <label><input type="radio" name="payment"> Credit / Debit Card</label> -->
-                    <!-- <label><input type="radio" name="payment"> Cash on Delivery</label> -->
-            <!-- FIXED: Added id="rzp-button1" -->
-            <button id="rzp-button1" style="width: 100%; background-color: #f97316; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
-                Pay ₹{{ cart_total | round | int }} & Place Order
-            </button>
+                    <!-- Toggle for Billing Address -->
+                    <label style="font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="same_billing" checked onchange="toggleBilling()"> 
+                        Billing address is same as shipping
+                    </label>
+
+                    <div id="billing_div" style="display: none; margin-top: 10px;">
+                        <textarea name="billing_address" placeholder="Enter different Billing Address" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit; resize: vertical; min-height: 70px;"></textarea>
+                    </div>
                 </div>
-            </div>
 
-            <!-- FIXED: Forced Integer on Checkout Button
-            <button style="width: 100%; background-color: #f97316; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
-                Pay ₹{{ cart_total | round | int }} & Place Order
-            </button>
-            <div style="text-align: center; margin-top: 15px;">
-                <a href="{{ url_for('search', q=query) }}" style="color: #64748b; font-size: 0.9rem; text-decoration: none;">← Back to Cart</a>
-            </div> -->
+                <!-- Hidden inputs to hold the Razorpay success data -->
+                <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+                <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+                <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+
+                <!-- The Pay Button now checks the form first -->
+                <button type="button" id="rzp-button1" style="width: 100%; background-color: #f97316; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
+                    Confirm Address & Pay ₹{{ cart_total | round | int }}
+                </button>
+                
+                <div style="text-align: center; margin-top: 15px;">
+                    <a href="{{ url_for('search', q=query) }}" style="color: #64748b; font-size: 0.9rem; text-decoration: none;">← Back to Cart</a>
+                </div>
+            </form>
 
         {% else %}
             <!-- CART VIEW -->
@@ -190,53 +201,61 @@
     {% endif %}
 </div>
 
-<!-- INLINE JAVASCRIPT FOR QTY SELECTOR -->
+<!-- INLINE JAVASCRIPT FOR UI -->
 <script>
+    // Handles Qty Selector
     function decrementQty(btn) {
         let input = btn.nextElementSibling;
         let currentValue = parseInt(input.value);
-        if (currentValue > 1) {
-            input.value = currentValue - 1;
-        }
+        if (currentValue > 1) { input.value = currentValue - 1; }
     }
-
     function incrementQty(btn) {
         let input = btn.previousElementSibling;
         let currentValue = parseInt(input.value);
         let maxStock = parseInt(input.max);
-        
-        if (currentValue < maxStock) {
-            input.value = currentValue + 1;
-        } else {
-            alert("You've reached the maximum available stock for this item.");
-        }
+        if (currentValue < maxStock) { input.value = currentValue + 1; } 
+        else { alert("You've reached the maximum available stock for this item."); }
+    }
+    // Toggles the Billing Address box
+    function toggleBilling() {
+        const checkbox = document.getElementById('same_billing');
+        const billingDiv = document.getElementById('billing_div');
+        billingDiv.style.display = checkbox.checked ? 'none' : 'block';
     }
 </script>
-<!-- NEW: Razorpay Payment Gateway Integration -->
+
+<!-- RAZORPAY INTEGRATION -->
 {% if checkout_mode and razorpay_order_id %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     var options = {
-        "key": "{{ razorpay_key_id }}", // Enter the Key ID generated from the Dashboard
-        "amount": "{{ (cart_total | round | int) * 100 }}", // Amount is in currency subunits. Default currency is INR. Hence, 50000 refers to 50000 paise
+        "key": "{{ razorpay_key_id }}", 
+        "amount": "{{ (cart_total | round | int) * 100 }}", 
         "currency": "INR",
         "name": "YuLiv Pharmacy",
         "description": "Health & Wellness Order",
-        // "image": "https://yuliv.in/static/logo.png", // Optional: Add your logo URL here
-        "order_id": "{{ razorpay_order_id }}", // This is the order ID we generated in app.py
+        "order_id": "{{ razorpay_order_id }}", 
         "handler": function (response){
-            // When payment succeeds, redirect the user to a success page to save the order
-            window.location.href = "{{ url_for('payment_success') }}?payment_id=" + response.razorpay_payment_id + "&order_id=" + response.razorpay_order_id + "&signature=" + response.razorpay_signature;
+            // 1. When payment succeeds, inject the IDs into the hidden form fields
+            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+            document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+            document.getElementById('razorpay_signature').value = response.razorpay_signature;
+            
+            // 2. Submit the form securely to Flask (sends address + payment data together)
+            document.getElementById('checkout-form').submit();
         },
-        "theme": {
-            "color": "#0d9488" // Matches your YuLiv teal branding!
-        }
+        "theme": { "color": "#0d9488" }
     };
     var rzp1 = new Razorpay(options);
     
-    // When the "Pay" button is clicked, open the Razorpay modal
     document.getElementById('rzp-button1').onclick = function(e){
-        rzp1.open();
+        // Ensure the customer filled out the address fields before paying
+        var form = document.getElementById('checkout-form');
+        if (form.checkValidity()) {
+            rzp1.open();
+        } else {
+            form.reportValidity(); // Highlights the missing required fields
+        }
         e.preventDefault();
     }
 </script>

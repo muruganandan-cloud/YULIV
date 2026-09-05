@@ -661,11 +661,37 @@ def upload_inventory():
     # Loads the frontend UI we created earlier
     return render_template('admin_upload.html')
 
-@app.route('/payment_success')
+@app.route('/payment_success', methods=['GET', 'POST'])
 @login_required
 def payment_success():
-    # We will build the order-saving database logic here in the next step!
-    payment_id = request.args.get('payment_id')
-    return f"<h1>Payment Successful!</h1><p>Your Razorpay Payment ID is: {payment_id}</p><p>We will clear your cart and save the order to the database next.</p>"
+    if request.method == 'POST':
+        # Grab the payment tokens
+        payment_id = request.form.get('razorpay_payment_id')
+        order_id = request.form.get('razorpay_order_id')
+        
+        # Grab the shipping details
+        customer_name = request.form.get('customer_name')
+        phone = request.form.get('customer_phone')
+        shipping_address = request.form.get('shipping_address')
+        
+        # Check if they used a different billing address
+        billing_address = request.form.get('billing_address')
+        if not billing_address:
+            billing_address = shipping_address  # Same as shipping
+            
+        # TODO: Save this data to your database Order tables here
+            
+        return f"""
+        <div style="max-width: 600px; margin: 50px auto; text-align: center; font-family: sans-serif;">
+            <h1 style="color: #16a34a;">Payment Successful!</h1>
+            <p>Your Razorpay Payment ID is: <strong>{payment_id}</strong></p>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 8px; text-align: left; margin-top: 20px;">
+                <h3>Shipping To:</h3>
+                <p>{customer_name}<br>{phone}<br>{shipping_address}</p>
+            </div>
+            <a href="/" style="display: inline-block; margin-top: 20px; color: #0d9488; text-decoration: none;">Return Home</a>
+        </div>
+        """
+    return redirect(url_for('search'))
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
