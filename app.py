@@ -660,5 +660,12 @@ def upload_inventory():
 
     # Loads the frontend UI we created earlier
     return render_template('admin_upload.html')
+
+@app.route('/payment_success')
+@login_required
+def payment_success():
+    # We will build the order-saving database logic here in the next step!
+    payment_id = request.args.get('payment_id')
+    return f"<h1>Payment Successful!</h1><p>Your Razorpay Payment ID is: {payment_id}</p><p>We will clear your cart and save the order to the database next.</p>"
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
