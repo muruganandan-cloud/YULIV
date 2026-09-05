@@ -11,6 +11,19 @@ from werkzeug.utils import secure_filename
 from functools import wraps
 from dotenv import load_dotenv
 from google import genai
+import os
+import razorpay
+from dotenv import load_dotenv
+
+# Load the variables from the .env file into the script
+load_dotenv()
+
+# Securely fetch the keys from the environment variables
+RAZORPAY_KEY_ID = os.getenv('RAZORPAY_KEY_ID')
+RAZORPAY_KEY_SECRET = os.getenv('RAZORPAY_KEY_SECRET')
+
+# Initialize Razorpay Client
+razorpay_client = razorpay.Client(auth=(RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET))
 
 load_dotenv(override=True)  # Load environment variables from .env file
 raw_key = os.getenv("GEMINI_API_KEY")
@@ -307,6 +320,34 @@ def search():
                     'qty': item.quantity,
                     'total': round(item_total, 2)
                 })
+    # --- NEW: RAZORPAY ORDER GENERATION ---
+    razorpay_order_id = None
+    if checkout_mode and cart_total > 0:
+        # Razorpay expects the amount in paise (multiply rupees by 100)
+        order_amount = int(round(cart_total)) * 100
+        
+        # Create the order on Razorpay's servers
+        order_data = {
+            "amount": order_amount,
+            "currency": "INR",
+            "receipt": f"yuliv_order_{current_user.id}"
+        }
+        razorpay_order = razorpay_client.order.create(data=order_data)
+        razorpay_order_id = razorpay_order['id']
+        
+    return render_template('search_results.html', 
+                           query=raw_query, 
+                           results=results, 
+                           ai_top=ai_top, 
+                           ai_bottom=ai_bottom,
+                           cart_items=cart_items,
+                           cart_qtys=cart_qtys,
+                           cart_details=cart_details,
+                           cart_total=int(round(cart_total)),
+                           total_savings=int(round(total_savings)),
+                           checkout_mode=checkout_mode,
+                           razorpay_order_id=razorpay_order_id,
+                           razorpay_key_id=RAZORPAY_KEY_ID)
 
     return render_template('search_results.html', 
                            query=raw_query, 
