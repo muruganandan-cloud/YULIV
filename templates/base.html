@@ -201,7 +201,7 @@
             
             <nav class="main-nav">
             <div class="user-actions">
-                {% if current_user.is_authenticated %}
+               {% if current_user.is_authenticated %}
                     <div class="dropdown amz-nav-item">
                         <div class="amz-nav-line1">Hello, {{ current_user.username }}</div>
                         <div class="amz-nav-line2">Account & Lists ▾</div>
@@ -209,6 +209,10 @@
                             <div style="padding: 10px 20px; font-weight: bold; border-bottom: 1px solid #eee;">Your Account</div>
                             <a href="{{ url_for('profile') }}">Your Profile</a>
                             <a href="{{ url_for('orders') }}">Your Orders</a>
+                            
+                            <!-- NEW: Activity Log Link -->
+                            <a href="{{ url_for('history') }}">Account Activity & History</a>
+                            
                             <a href="{{ url_for('browsing_history') }}">Browsing History</a>
                             <a href="{{ url_for('recommendations') }}">Your Recommendations</a>
                             <hr style="border: 0; border-top: 1px solid #eee; margin: 0;">

@@ -14,7 +14,7 @@ from google import genai
 import os
 import razorpay
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timezone
 
 # Load the variables from the .env file into the script
 load_dotenv()
@@ -119,6 +119,8 @@ class Order(db.Model):
     razorpay_order_id = db.Column(db.String(255), nullable=False)
     total_amount = db.Column(db.Integer, nullable=False)
     date_ordered = db.Column(db.DateTime, default=datetime.utcnow)
+    # NEW: Delivery Status tracking
+    status = db.Column(db.String(50), default="Processing")
     items = db.relationship('OrderItem', backref='order', cascade="all, delete-orphan")
 
 class OrderItem(db.Model):
@@ -128,6 +130,15 @@ class OrderItem(db.Model):
     product_name = db.Column(db.String(255), nullable=False)
     price = db.Column(db.Integer, nullable=False)
     quantity = db.Column(db.Integer, nullable=False)
+
+# NEW TABLE: Tracks all customer actions
+class ActivityLog(db.Model):
+    __tablename__ = 'activity_logs'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    action_type = db.Column(db.String(50), nullable=False) # e.g., 'Order Executed', 'Cancelled'
+    description = db.Column(db.Text, nullable=False)
+    timestamp = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
 @app.context_processor
 def inject_user():
@@ -498,12 +509,16 @@ def profile():
 @app.route('/orders')
 @login_required
 def orders():
-    return render_template('orders.html')
+    # Fetch all orders for the logged-in user, newest first
+    user_orders = Order.query.filter_by(user_id=current_user.id).order_by(Order.date_ordered.desc()).all()
+    
+    return render_template('orders.html', orders=user_orders)
 
 @app.route('/history')
 @login_required
-def browsing_history():
-    return render_template('history.html')
+def history():
+    logs = ActivityLog.query.filter_by(user_id=current_user.id).order_by(ActivityLog.timestamp.desc()).all()
+    return render_template('history.html', logs=logs)
 
 @app.route('/recommendations')
 @login_required
@@ -764,6 +779,15 @@ def payment_success():
                 
         # Update the master order total
         new_order.total_amount = order_total
+        new_order.status = "Processing"
+        
+        # --- NEW: LOG THE ACTIVITY ---
+        action_log = ActivityLog(
+            user_id=current_user.id,
+            action_type="Order Executed",
+            description=f"Paid ₹{order_total} via Razorpay. Payment Ref: {payment_id}"
+        )
+        db.session.add(action_log)
                 
         # 3. Commit everything to the database at once
         db.session.commit()

@@ -1,13 +1,62 @@
-{% extends "base.html" %}
+{% extends "base.html" %} <!-- Adjust this if your base template name is different -->
+
 {% block content %}
-<div class="content" style="max-width: 800px; margin: 40px auto; background: #fff; padding: 40px; border-radius: 12px; text-align: left; box-shadow: 0 4px 6px rgba(0,0,0,0.05);">
-    <h2 style="color: #0d9488; margin-bottom: 20px; font-size: 2rem;">Returns & Orders</h2>
-    <p style="font-size: 1.1rem; color: #555;">You currently have no past orders.</p>
-    
-    <div style="margin-top: 30px; padding: 30px; border: 2px dashed #eaeaea; border-radius: 8px; text-align: center;">
-        <div style="font-size: 3rem; margin-bottom: 10px;">📦</div>
-        <p style="color: #888;">When you place an order, it will appear here so you can easily track it or <strong>Buy Again</strong>.</p>
-        <a href="/" style="display: inline-block; margin-top: 15px; color: #ff6600; font-weight: bold; text-decoration: none; border: 1px solid #ff6600; padding: 8px 16px; border-radius: 20px;">Start Shopping ➔</a>
-    </div>
+<div style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
+    <h2 style="color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px; margin-bottom: 30px;">Your Order History</h2>
+
+    {% if orders %}
+        {% for order in orders %}
+        <div style="background: #ffffff; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 25px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow: hidden;">
+            
+            <!-- Order Header -->
+            <div style="background: #f8fafc; padding: 15px 20px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <div>
+                    <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold;">Order Placed</div>
+                    <div style="color: #1e293b; font-weight: 500;">{{ order.date_ordered.strftime('%B %d, %Y') }}</div>
+                </div>
+                <div>
+                    <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold;">Total</div>
+                    <div style="color: #1e293b; font-weight: 500;">₹{{ order.total_amount | round | int }}</div>
+                </div>
+                <div style="text-align: right;">
+                    <div style="font-size: 0.85rem; color: #64748b; text-transform: uppercase; font-weight: bold;">Order ID: {{ order.razorpay_order_id }}</div>
+                    
+                    <!-- DYNAMIC DELIVERY STATUS BADGE -->
+                    <div style="margin-top: 5px; display: inline-block; padding: 4px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold;
+                        {% if order.status == 'Processing' %} background-color: #fef08a; color: #854d0e;
+                        {% elif order.status == 'Shipped' %} background-color: #bae6fd; color: #0369a1;
+                        {% elif order.status == 'Delivered' %} background-color: #bbf7d0; color: #166534;
+                        {% elif order.status == 'Cancelled' %} background-color: #fecaca; color: #991b1b;
+                        {% else %} background-color: #e2e8f0; color: #475569; {% endif %}">
+                        {{ order.status }}
+                    </div>
+                </div>
+
+            <!-- Order Items -->
+            <div style="padding: 20px;">
+                <ul style="list-style: none; padding: 0; margin: 0;">
+                    {% for item in order.items %}
+                    <li style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 12px;">
+                        <div>
+                            <div style="font-weight: 600; color: #1e293b; font-size: 1rem;">{{ item.product_name }}</div>
+                            <div style="color: #64748b; font-size: 0.9rem;">Qty: {{ item.quantity }}</div>
+                        </div>
+                        <div style="font-weight: bold; color: #0d9488;">
+                            ₹{{ item.price | round | int }}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="text-align: center; padding: 50px 20px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">
+            <h3 style="color: #475569; margin-bottom: 15px;">No orders yet!</h3>
+            <p style="color: #64748b; margin-bottom: 20px;">When you purchase items, they will appear here.</p>
+            <a href="/" style="background-color: #f97316; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold;">Start Shopping</a>
+        </div>
+    {% endif %}
 </div>
 {% endblock %}
