@@ -26,16 +26,25 @@
         
         <h2 class="search-title">Search Results for <span>"{{ query }}"</span></h2>
 
-        {% if ai_top %}
-        <div class="ai-dashboard" style="margin-bottom: 30px;">
-            <div class="ai-dashboard-header">
+        {% if query and query != 'checkout' and query != '' %}
+            {% if ai_top %}
+                <div class="ai-dashboard" style="margin-bottom: 30px;">
+                <div class="ai-dashboard-header">
                 <h3>✨ Personalized AI Health Insights</h3>
-            </div>
+                </div>
             <!-- FIXED: Swapped grid container for full-width wrapper -->
-            <div class="ai-full-width-wrapper">
-                {{ ai_top|safe }}
-            </div>
+                <div class="ai-full-width-wrapper">
+                    {{ ai_top|safe }}
+                </div>
         </div>
+             {% endif %}
+        {% else %}
+              <!-- Default Promo State (Replaces the AI when searching 'checkout' or nothing) -->
+            <div class="ai-dashboard" style="margin-bottom: 30px; background: #f0fdf4; padding: 25px; border-radius: 8px; text-align: center; border: 1px solid #bbf7d0;">
+              <h3 style="color: #166534; margin-bottom: 10px;">🌟 Today's Featured Offers</h3>
+               <p style="color: #334155; font-size: 1.05rem;">Stock up on daily wellness essentials or explore our exclusive Cetaphil skincare promotional range.</p>
+               <!-- You can embed your 3D layout samples, cover bag promos, or a carousel of products here later! -->
+            </div>
         {% endif %}
 
         {% if results %}
@@ -116,30 +125,57 @@
     <!-- ========================================== -->
     <!-- RIGHT COLUMN: STICKY CART/CHECKOUT PANE -->
     <!-- ========================================== -->
-    {% if cart_items or checkout_mode %}
+   {% if cart_items or checkout_mode %}
     <div style="width: 350px; background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; position: sticky; top: 20px; height: calc(100vh - 40px); overflow-y: auto; box-shadow: -4px 0 15px rgba(0,0,0,0.05);">
         
-{% if checkout_mode %}
+        {% if checkout_mode %}
             <!-- CHECKOUT VIEW -->
             <h3 style="color: #f97316; border-bottom: 2px solid #f97316; padding-bottom: 10px; margin-bottom: 20px;">Secure Checkout</h3>
             
             {% if total_savings and total_savings > 0 %}
             <div style="background-color: #dcfce7; color: #166534; padding: 12px; border-radius: 5px; margin-bottom: 20px; font-weight: bold; text-align: center; border: 1px solid #bbf7d0;">
-                🎉 You save ₹{{ total_savings | round | int }} on this order!
+                🎉 You save ₹<span id="dynamic-savings">{{ total_savings | round | int }}</span> on this order!
             </div>
             {% endif %}
 
-            <!-- NEW: Address Collection Form -->
+            <!-- NEW: Order Summary with Checkboxes -->
+            <div style="margin-bottom: 20px; background: #ffffff; padding: 15px; border-radius: 8px; border: 1px solid #e2e8f0;">
+                <h4 style="font-size: 1rem; margin-bottom: 10px; color: #1e293b;">Order Summary</h4>
+                <ul style="list-style: none; padding: 0; margin: 0 0 10px 0;">
+                    {% for item in cart_details %}
+                    <li style="border-bottom: 1px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px;">
+                        <!-- THE CHECKBOX -->
+                        <input type="checkbox" class="cart-item-checkbox" name="selected_items" value="{{ item.id }}" checked onchange="updateCheckout()" style="margin-top: 4px; cursor: pointer;">
+                        
+                        <div style="flex: 1;">
+                            <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b; line-height: 1.3;">{{ item.name }}</div>
+                            <div style="color: #64748b; font-size: 0.80rem;">Qty: {{ item.qty }} x ₹{{ item.yuliv_price | round | int }}</div>
+                        </div>
+                        <div style="font-weight: bold; color: #0d9488; font-size: 0.90rem;">
+                            ₹{{ item.total | round | int }}
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1rem; color: #1e293b;">
+                    <span>Total:</span>
+                    <span>₹<span id="dynamic-checkout-total">{{ cart_total | round | int }}</span></span>
+                </div>
+            </div>
+
+            <!-- Address Collection Form -->
             <form id="checkout-form" method="POST" action="{{ url_for('payment_success') }}">
                 
                 <div style="margin-bottom: 20px;">
-                    <h4 style="font-size: 1rem; margin-bottom: 10px; color: #1e293b;">1. Delivery & Contact Info</h4>
+                    <h4 style="font-size: 1rem; margin-bottom: 10px; color: #1e293b;">Delivery & Contact Info</h4>
                     
                     <input type="text" name="customer_name" placeholder="Full Name" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit;">
-                    
                     <input type="tel" name="customer_phone" placeholder="Mobile Number" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit;">
                     
-                    <textarea name="shipping_address" placeholder="Shipping Address (Door No, Street, Locality, Pincode)" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit; resize: vertical; min-height: 70px;"></textarea>
+                    <input type="text" name="door_no_street" placeholder="Door No & Street" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                    <input type="text" name="area" placeholder="Area / Locality" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                    <input type="text" name="city" placeholder="City (e.g., Coimbatore)" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                    <input type="text" name="pincode" placeholder="Pincode" required style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">   
 
                     <!-- Toggle for Billing Address -->
                     <label style="font-size: 0.85rem; color: #475569; display: flex; align-items: center; gap: 8px; cursor: pointer;">
@@ -148,7 +184,10 @@
                     </label>
 
                     <div id="billing_div" style="display: none; margin-top: 10px;">
-                        <textarea name="billing_address" placeholder="Enter different Billing Address" style="width: 100%; padding: 10px; border: 1px solid #cbd5e1; border-radius: 5px; box-sizing: border-box; font-family: inherit; resize: vertical; min-height: 70px;"></textarea>
+                        <input type="text" name="bill_door_no_street" placeholder="Billing Door No & Street" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                        <input type="text" name="bill_area" placeholder="Billing Area / Locality" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                        <input type="text" name="bill_city" placeholder="Billing City" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
+                        <input type="text" name="bill_pincode" placeholder="Billing Pincode" style="width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #cbd5e1; border-radius: 5px;">
                     </div>
                 </div>
 
@@ -157,9 +196,8 @@
                 <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
                 <input type="hidden" name="razorpay_signature" id="razorpay_signature">
 
-                <!-- The Pay Button now checks the form first -->
                 <button type="button" id="rzp-button1" style="width: 100%; background-color: #f97316; color: white; padding: 12px; border: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px;">
-                    Confirm Address & Pay ₹{{ cart_total | round | int }}
+                    Confirm Address & Pay ₹<span id="pay-btn-amount">{{ cart_total | round | int }}</span>
                 </button>
                 
                 <div style="text-align: center; margin-top: 15px;">
@@ -173,14 +211,15 @@
             
             <ul style="list-style: none; padding: 0; margin: 0 0 20px 0;">
                 {% for item in cart_details %}
-                <li style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start;">
-                    <div style="flex: 1; padding-right: 15px;">
+                <li style="border-bottom: 1px solid #e2e8f0; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 12px;">
+                    <!-- THE CHECKBOX -->
+                    <input type="checkbox" class="cart-item-checkbox" name="selected_items" value="{{ item.id }}" checked style="margin-top: 4px; cursor: pointer;">
+                    
+                    <div style="flex: 1;">
                         <div style="font-weight: 600; font-size: 0.90rem; color: #1e293b; line-height: 1.3; margin-bottom: 4px;">{{ item.name }}</div>
-                        <!-- FIXED: Forced Integer on Cart Line Items -->
                         <div style="color: #64748b; font-size: 0.85rem;">Qty: {{ item.qty }} x ₹{{ item.yuliv_price | round | int }}</div>
                     </div>
                     <div style="font-weight: bold; color: #0d9488; font-size: 0.95rem;">
-                        <!-- FIXED: Forced Integer on Line Total -->
                         ₹{{ item.total | round | int }}
                     </div>
                 </li>
@@ -189,7 +228,7 @@
             
             <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.1rem; margin-bottom: 15px; color: #1e293b;">
                 <span>Total:</span>
-                <!-- FIXED: Forced Integer on Grand Total -->
+                <!-- Since we aren't doing AJAX on the Cart View yet, just standard total -->
                 <span>₹{{ cart_total | round | int }}</span>
             </div>
 
@@ -199,8 +238,6 @@
         {% endif %}
     </div>
     {% endif %}
-</div>
-
 <!-- INLINE JAVASCRIPT FOR UI -->
 <script>
     // Handles Qty Selector
@@ -222,7 +259,60 @@
         const billingDiv = document.getElementById('billing_div');
         billingDiv.style.display = checkbox.checked ? 'none' : 'block';
     }
-</script>
+    function updateCheckout() {
+         // 1. Gather all checked boxes
+         let selectedIds = Array.from(document.querySelectorAll('.cart-item-checkbox:checked')).map(cb => cb.value);
+         let payButton = document.getElementById('rzp-button1');
+    
+         // 2. Handle empty cart scenario
+         if (selectedIds.length === 0) {
+           payButton.disabled = true;
+           payButton.style.backgroundColor = '#94a3b8'; // Gray out button
+           payButton.innerText = "Please select an item";
+        
+        document.getElementById('dynamic-checkout-total').innerText = "0";
+        if (document.getElementById('dynamic-savings')) {
+            document.getElementById('dynamic-savings').innerText = "0";
+        }
+        return;
+        }
+
+        // 3. Temporarily disable button while calculating
+            payButton.disabled = true;
+            payButton.innerText = "Calculating...";
+
+         // 4. Silently ping Flask to recalculate and fetch new order ID
+            fetch('/update_checkout_total', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({selected_ids: selectedIds})
+        })
+        .then(response => response.json())
+        .then(data => {
+        // Restore button state
+           payButton.disabled = false;
+           payButton.style.backgroundColor = '#f97316';
+        
+        // Update DOM elements with new math
+           document.getElementById('dynamic-checkout-total').innerText = data.new_total;
+        
+        if (document.getElementById('dynamic-savings')) {
+            document.getElementById('dynamic-savings').innerText = data.new_savings;
+        }
+        
+        // Update Pay Button text securely
+        payButton.innerHTML = `Confirm Address & Pay ₹<span id="pay-btn-amount">${data.new_total}</span>`;
+        
+        // Critically: Update the Razorpay payload before the modal opens
+        options.order_id = data.order_id;
+        options.amount = data.new_total * 100;
+        })
+        .catch(error => {
+           console.error("Error updating checkout:", error);
+           payButton.innerText = "Error calculating total";
+        });
+    }
+    </script>
 
 <!-- RAZORPAY INTEGRATION -->
 {% if checkout_mode and razorpay_order_id %}

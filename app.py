@@ -14,6 +14,7 @@ from google import genai
 import os
 import razorpay
 from dotenv import load_dotenv
+from datetime import datetime
 
 # Load the variables from the .env file into the script
 load_dotenv()
@@ -83,7 +84,13 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(255), nullable=False)
     pincode = db.Column(db.String(10), nullable=True)
-    is_admin = db.Column(db.Boolean, default=False) # <--- ADD THIS LINE
+    
+    # NEW: Contact and Address Fields for Checkout
+    phone = db.Column(db.String(20), nullable=True)
+    shipping_address = db.Column(db.Text, nullable=True)
+    billing_address = db.Column(db.Text, nullable=True)
+    
+    is_admin = db.Column(db.Boolean, default=False) 
     cart_items = db.relationship('CartItem', backref='owner', cascade="all, delete-orphan")
 
 @login_manager.user_loader
@@ -104,6 +111,23 @@ class CartItem(db.Model):
     
     # This line MUST exist for the HTML to fetch the product name and price!
     product = db.relationship('Products')
+class Order(db.Model):
+    __tablename__ = 'orders'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    razorpay_payment_id = db.Column(db.String(255), nullable=False)
+    razorpay_order_id = db.Column(db.String(255), nullable=False)
+    total_amount = db.Column(db.Integer, nullable=False)
+    date_ordered = db.Column(db.DateTime, default=datetime.utcnow)
+    items = db.relationship('OrderItem', backref='order', cascade="all, delete-orphan")
+
+class OrderItem(db.Model):
+    __tablename__ = 'order_items'
+    id = db.Column(db.Integer, primary_key=True)
+    order_id = db.Column(db.Integer, db.ForeignKey('orders.id'), nullable=False)
+    product_name = db.Column(db.String(255), nullable=False)
+    price = db.Column(db.Integer, nullable=False)
+    quantity = db.Column(db.Integer, nullable=False)
 
 @app.context_processor
 def inject_user():
@@ -314,6 +338,7 @@ def search():
                 
                 # 5. Pass it all to the HTML
                 cart_details.append({
+                    'id': item.id,
                     'name': product.product_name,
                     'product_price': product.product_price,
                     'yuliv_price': round(yuliv_price, 2),
@@ -665,21 +690,83 @@ def upload_inventory():
 @login_required
 def payment_success():
     if request.method == 'POST':
-        # Grab the payment tokens
+        # 1. Grab the payment tokens
         payment_id = request.form.get('razorpay_payment_id')
         order_id = request.form.get('razorpay_order_id')
         
-        # Grab the shipping details
+        # 2. Grab and stitch the shipping details
         customer_name = request.form.get('customer_name')
         phone = request.form.get('customer_phone')
-        shipping_address = request.form.get('shipping_address')
+        door_street = request.form.get('door_no_street')
+        area = request.form.get('area')
+        city = request.form.get('city')
+        pincode = request.form.get('pincode')
+        shipping_address = f"{door_street}, {area}, {city} - {pincode}"
         
-        # Check if they used a different billing address
-        billing_address = request.form.get('billing_address')
-        if not billing_address:
-            billing_address = shipping_address  # Same as shipping
+        # 3. Grab and stitch the billing address (if provided)
+        bill_door = request.form.get('bill_door_no_street')
+        if not bill_door:
+            # The user left the "Same as shipping" box checked
+            billing_address = shipping_address
+        else:
+            # The user provided a different billing address
+            bill_area = request.form.get('bill_area')
+            bill_city = request.form.get('bill_city')
+            bill_pincode = request.form.get('bill_pincode')
+            billing_address = f"{bill_door}, {bill_area}, {bill_city} - {bill_pincode}"
             
-        # TODO: Save this data to your database Order tables here
+        # 4. Save the contact and address data to the user's profile
+        current_user.phone = phone
+        current_user.shipping_address = shipping_address
+        current_user.billing_address = billing_address
+            
+        # 5. SELECTIVE CART CLEARING
+       # Extract the list of item IDs the user actually checked out with
+        purchased_item_ids = request.form.getlist('selected_items')
+        
+        # 1. CREATE THE MASTER ORDER
+        # Note: You may want to pass the calculated new_total from the frontend securely, 
+        # or recalculate it here to be perfectly secure.
+        new_order = Order(
+            user_id=current_user.id,
+            razorpay_payment_id=payment_id,
+            razorpay_order_id=order_id,
+            total_amount=0 # We will tally this in the loop below
+        )
+        db.session.add(new_order)
+        db.session.flush() # Flushes to get the new_order.id before committing
+        
+        order_total = 0
+        
+        # 2. LOOP THROUGH CART, CREATE ORDER ITEMS, AND DELETE FROM CART
+        for item in current_user.cart_items:
+            if str(item.id) in purchased_item_ids:
+                
+                # Calculate the exact price they paid
+                product = item.product
+                mrp = product.product_price
+                discount_amount = mrp * ((product.discount or 0) / 100)
+                yuliv_price = int(round(mrp - discount_amount))
+                
+                # Save the line item snapshot
+                order_item = OrderItem(
+                    order_id=new_order.id,
+                    product_name=product.product_name,
+                    price=yuliv_price,
+                    quantity=item.quantity
+                )
+                db.session.add(order_item)
+                
+                order_total += (yuliv_price * item.quantity)
+                
+                # Remove from the temporary cart
+                db.session.delete(item)
+                
+        # Update the master order total
+        new_order.total_amount = order_total
+                
+        # 3. Commit everything to the database at once
+        db.session.commit()
             
         return f"""
         <div style="max-width: 600px; margin: 50px auto; text-align: center; font-family: sans-serif;">
@@ -693,5 +780,46 @@ def payment_success():
         </div>
         """
     return redirect(url_for('search'))
+
+@app.route('/update_checkout_total', methods=['POST'])
+@login_required
+def update_checkout_total():
+    data = request.get_json()
+    selected_cart_ids = data.get('selected_ids', [])
+    
+    new_total = 0
+    new_savings = 0
+    
+    # Recalculate totals based strictly on checked items
+    for item in current_user.cart_items:
+        if str(item.id) in selected_cart_ids:
+            product = item.product
+            mrp = product.product_price
+            discount_pct = product.discount if product.discount else 0
+            discount_amount = mrp * (discount_pct / 100)
+            yuliv_price = mrp - discount_amount
+            
+            new_total += yuliv_price * item.quantity
+            new_savings += discount_amount * item.quantity
+            
+    # Generate the new Razorpay order securely
+    new_order_id = None
+    if new_total > 0:
+        order_amount = int(round(new_total)) * 100
+        try:
+            razorpay_order = razorpay_client.order.create({
+                "amount": order_amount, 
+                "currency": "INR", 
+                "receipt": f"yuliv_update_{current_user.id}"
+            })
+            new_order_id = razorpay_order['id']
+        except Exception as e:
+            print(f"Razorpay Error: {e}")
+            
+    return jsonify({
+        'new_total': int(round(new_total)),
+        'new_savings': int(round(new_savings)),
+        'order_id': new_order_id
+    })
 if __name__ == '__main__':
     app.run(debug=True, port=8080)
