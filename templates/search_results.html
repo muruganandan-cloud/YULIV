@@ -22,28 +22,30 @@
     <!-- ========================================== -->
     <!-- LEFT COLUMN: MAIN SEARCH RESULTS (70% width) -->
     <!-- ========================================== -->
-    <div class="search-page-wrapper" style="flex: 1;">
+<div class="search-page-wrapper" style="flex: 1;">
         
-        <h2 class="search-title">Search Results for <span>"{{ query }}"</span></h2>
-
         {% if query and query != 'checkout' and query != '' %}
+            <!-- REAL SEARCH: Show exactly what they searched for -->
+            <h2 class="search-title">Search Results for <span>"{{ query }}"</span></h2>
+            
             {% if ai_top %}
                 <div class="ai-dashboard" style="margin-bottom: 30px;">
-                <div class="ai-dashboard-header">
-                <h3>✨ Personalized AI Health Insights</h3>
+                    <div class="ai-dashboard-header">
+                        <h3>✨ Personalized AI Health Insights</h3>
+                    </div>
+                    <div class="ai-full-width-wrapper">
+                        {{ ai_top|safe }}
+                    </div>
                 </div>
-            <!-- FIXED: Swapped grid container for full-width wrapper -->
-                <div class="ai-full-width-wrapper">
-                    {{ ai_top|safe }}
-                </div>
-        </div>
              {% endif %}
         {% else %}
-              <!-- Default Promo State (Replaces the AI when searching 'checkout' or nothing) -->
+            <!-- CART VIEW / EMPTY SEARCH: Show a welcoming title and promos instead -->
+            <h2 class="search-title">Welcome to YuLiv Pharmacy</h2>
+            
             <div class="ai-dashboard" style="margin-bottom: 30px; background: #f0fdf4; padding: 25px; border-radius: 8px; text-align: center; border: 1px solid #bbf7d0;">
               <h3 style="color: #166534; margin-bottom: 10px;">🌟 Today's Featured Offers</h3>
                <p style="color: #334155; font-size: 1.05rem;">Stock up on daily wellness essentials or explore our exclusive Cetaphil skincare promotional range.</p>
-               <!-- You can embed your 3D layout samples, cover bag promos, or a carousel of products here later! -->
+               <!-- Future upgrade: We can drop a scrolling carousel of products right here! -->
             </div>
         {% endif %}
 
@@ -108,16 +110,17 @@
         </div>
         {% endif %}
 
-        {% if ai_bottom %}
-        <div class="ai-dashboard" style="margin-top: 40px;">
-            <div class="ai-dashboard-header">
-                <h3>🔄 Similar Alternatives to Consider</h3>
+        {% if query and query != 'checkout' and query != '' %}
+            {% if ai_bottom %}
+            <div class="ai-dashboard" style="margin-top: 40px;">
+                <div class="ai-dashboard-header">
+                    <h3>🔄 Similar Alternatives to Consider</h3>
+                </div>
+                <div class="ai-full-width-wrapper">
+                    {{ ai_bottom|safe }}
+                </div>
             </div>
-            <!-- FIXED: Swapped grid container for full-width wrapper -->
-            <div class="ai-full-width-wrapper">
-                {{ ai_bottom|safe }}
-            </div>
-        </div>
+            {% endif %}
         {% endif %}
 
     </div>
