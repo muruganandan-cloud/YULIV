@@ -154,11 +154,11 @@
                             <div style="font-weight: 600; font-size: 0.85rem; color: #1e293b; line-height: 1.3;">{{ item.name }}</div>
                             <div style="color: #64748b; font-size: 0.80rem; display: flex; align-items: center; gap: 8px; margin-top: 5px;">
                                 <!-- NEW: Quantity Adjusters -->
-                                <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: white;">
-                                    <button type="button" onclick="changeCartQty({{ item.id }}, 'decrease')" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-right: 1px solid #cbd5e1;">-</button>
-                                    <span style="padding: 2px 10px; font-weight: bold; color: #1e293b;">{{ item.qty }}</span>
-                                    <button type="button" onclick="changeCartQty({{ item.id }}, 'increase')" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-left: 1px solid #cbd5e1;">+</button>
-                                </div>
+                        <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: white;">
+                            <button type="button" onclick="changeCartQty({{ item.id }}, 'decrease', {{ item.qty }})" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-right: 1px solid #cbd5e1;">-</button>
+                            <span style="padding: 2px 10px; font-weight: bold; color: #1e293b;">{{ item.qty }}</span>
+                            <button type="button" onclick="changeCartQty({{ item.id }}, 'increase', {{ item.qty }})" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-left: 1px solid #cbd5e1;">+</button>
+                        </div>
                                 <span>x ₹{{ item.yuliv_price | round | int }}</span>
                             </div>
                         </div>
@@ -175,7 +175,7 @@
             </div>
 
             <!-- Address Collection Form -->
-            <form id="checkout-form" method="POST" action="{{ url_for('payment_success') }}">
+            <form id="checkout-form" method="POST" action="{{ url_for('checkout_summary') }}">
                 
                 <div style="margin-bottom: 20px;">
                     <h4 style="font-size: 1rem; margin-bottom: 10px; color: #1e293b;">Delivery & Contact Info</h4>
@@ -230,11 +230,11 @@
                         <div style="font-weight: 600; font-size: 0.90rem; color: #1e293b; line-height: 1.3; margin-bottom: 4px;">{{ item.name }}</div>
                         <div style="color: #64748b; font-size: 0.85rem; display: flex; align-items: center; gap: 8px;">
                             <!-- NEW: Quantity Adjusters -->
-                            <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: white;">
-                                <button type="button" onclick="changeCartQty({{ item.id }}, 'decrease')" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-right: 1px solid #cbd5e1;">-</button>
-                                <span style="padding: 2px 10px; font-weight: bold; color: #1e293b;">{{ item.qty }}</span>
-                                <button type="button" onclick="changeCartQty({{ item.id }}, 'increase')" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-left: 1px solid #cbd5e1;">+</button>
-                            </div>
+                    <div style="display: flex; border: 1px solid #cbd5e1; border-radius: 4px; overflow: hidden; background: white;">
+                        <button type="button" onclick="changeCartQty({{ item.id }}, 'decrease', {{ item.qty }})" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-right: 1px solid #cbd5e1;">-</button>
+                        <span style="padding: 2px 10px; font-weight: bold; color: #1e293b;">{{ item.qty }}</span>
+                        <button type="button" onclick="changeCartQty({{ item.id }}, 'increase', {{ item.qty }})" style="padding: 2px 8px; background: #f1f5f9; border: none; cursor: pointer; border-left: 1px solid #cbd5e1;">+</button>
+                    </div>
                             <span>x ₹{{ item.yuliv_price | round | int }}</span>
                         </div>
                     </div>
@@ -296,25 +296,40 @@
         return;
         }
     function handleCheckboxChange() {
-        // 1. Instantly calculate the new total from the checked items
         let total = 0;
-        document.querySelectorAll('.cart-item-checkbox:checked').forEach(cb => {
+        let checkedBoxes = document.querySelectorAll('.cart-item-checkbox:checked');
+        
+        checkedBoxes.forEach(cb => {
             total += parseFloat(cb.getAttribute('data-item-total'));
         });
         
-        // 2. Update the Cart View screen if it exists
-        let cartTotalEl = document.getElementById('cart-view-total');
-        if (cartTotalEl) {
-            cartTotalEl.innerText = '₹' + Math.round(total);
-        }
+        // Update all total spans dynamically
+        let checkoutTotalEl = document.getElementById('dynamic-checkout-total');
+        if (checkoutTotalEl) checkoutTotalEl.innerText = Math.round(total);
         
-        // 3. Update the Checkout View & Razorpay payload if we are on that screen
-        if (document.getElementById('rzp-button1')) {
-            updateCheckout(); 
+        let btnAmount = document.getElementById('pay-btn-amount');
+        if (btnAmount) btnAmount.innerText = Math.round(total);
+        
+        let cartTotalEl = document.getElementById('cart-view-total');
+        if (cartTotalEl) cartTotalEl.innerText = '₹' + Math.round(total);
+        
+        // Disable the button if nothing is checked
+        let submitBtn = document.getElementById('update-confirm-btn');
+        if (submitBtn) {
+            submitBtn.disabled = (checkedBoxes.length === 0);
+            submitBtn.style.opacity = (checkedBoxes.length === 0) ? "0.5" : "1";
         }
     }
 
-    function changeCartQty(cartItemId, action) {
+    function changeCartQty(cartItemId, action, currentQty) {
+        // Trigger confirmation dialog if they try to decrease a quantity of 1
+        if (action === 'decrease' && currentQty <= 1) {
+            if (!confirm("Are you sure you want to delete this item from your cart?")) {
+                return; // They clicked "Cancel", do nothing!
+            }
+            action = 'delete'; // They clicked "OK", change action to delete
+        }
+        
         fetch('/update_cart_quantity', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -323,11 +338,9 @@
         .then(response => response.json())
         .then(data => {
             if(data.success) {
-                // Reload the page smoothly to fetch the new math and totals from the database
                 window.location.reload(); 
             }
-        })
-        .catch(error => console.error('Error updating quantity:', error));
+        });
     }
 
         // 3. Temporarily disable button while calculating
@@ -353,8 +366,9 @@
             document.getElementById('dynamic-savings').innerText = data.new_savings;
         }
         
-        // Update Pay Button text securely
-        payButton.innerHTML = `Confirm Address & Pay ₹<span id="pay-btn-amount">${data.new_total}</span>`;
+        <button type="button" id="rzp-button1" style="...">
+            Confirm Address & Pay ₹<span id="pay-btn-amount">{{ cart_total | round | int }}</span>
+        </button>
         
         // Critically: Update the Razorpay payload before the modal opens
         options.order_id = data.order_id;
@@ -368,7 +382,7 @@
     </script>
 
 <!-- RAZORPAY INTEGRATION -->
-{% if checkout_mode and razorpay_order_id %}
+<!-- {% if checkout_mode and razorpay_order_id %}
 <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script>
     var options = {
@@ -401,7 +415,7 @@
         }
         e.preventDefault();
     }
-</script>
-{% endif %}
+</script> -->
+<!-- {% endif %} -->
 
 {% endblock %}

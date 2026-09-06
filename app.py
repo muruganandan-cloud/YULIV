@@ -805,6 +805,81 @@ def payment_success():
         """
     return redirect(url_for('search'))
 
+@app.route('/update_cart_quantity', methods=['POST'])
+@login_required
+def update_cart_quantity():
+    data = request.get_json()
+    cart_item_id = data.get('cart_item_id')
+    action = data.get('action')
+    
+    # Find the specific item in the user's cart
+    cart_item = next((item for item in current_user.cart_items if str(item.id) == str(cart_item_id)), None)
+    
+    if cart_item:
+        if action == 'increase' and cart_item.quantity < cart_item.product.inventory_qty:
+            cart_item.quantity += 1
+        elif action == 'decrease' and cart_item.quantity > 1:
+            cart_item.quantity -= 1
+        elif action == 'delete':
+            db.session.delete(cart_item)
+            
+        db.session.commit()
+        
+    return jsonify({'success': True})
+
+@app.route('/checkout_summary', methods=['POST'])
+@login_required
+def checkout_summary():
+    # 1. Grab everything submitted from the form
+    selected_items = request.form.getlist('selected_items')
+    
+    if not selected_items:
+        # Failsafe if they somehow submit with nothing checked
+        return redirect(url_for('search', checkout='true'))
+        
+    # 2. Recalculate the exact total for ONLY the checked items
+    cart_total = 0
+    selected_cart_details = []
+    
+    for item in current_user.cart_items:
+        if str(item.id) in selected_items:
+            product = item.product
+            mrp = product.product_price
+            discount_amount = mrp * ((product.discount or 0) / 100)
+            yuliv_price = int(round(mrp - discount_amount))
+            item_total = yuliv_price * item.quantity
+            cart_total += item_total
+            
+            selected_cart_details.append({
+                'name': product.product_name,
+                'qty': item.quantity,
+                'yuliv_price': yuliv_price,
+                'total': item_total
+            })
+            
+    # 3. Generate a fresh Razorpay order for this exact total
+    razorpay_order_id = None
+    if cart_total > 0:
+        order_amount = int(round(cart_total)) * 100
+        try:
+            razorpay_order = razorpay_client.order.create({
+                "amount": order_amount, 
+                "currency": "INR", 
+                "receipt": f"yuliv_summary_{current_user.id}"
+            })
+            razorpay_order_id = razorpay_order['id']
+        except Exception as e:
+            print(f"Razorpay Error: {e}")
+            
+    # 4. Pass the raw form data (addresses, etc) to the next page so we don't lose it
+    form_data = request.form.to_dict(flat=False)
+            
+    return render_template('checkout_summary.html',
+                           cart_details=selected_cart_details,
+                           cart_total=cart_total,
+                           razorpay_order_id=razorpay_order_id,
+                           form_data=form_data)
+
 @app.route('/update_checkout_total', methods=['POST'])
 @login_required
 def update_checkout_total():

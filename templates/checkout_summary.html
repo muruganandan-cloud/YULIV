@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div style="max-width: 800px; margin: 40px auto; padding: 20px; font-family: sans-serif;">
+    <h2 style="color: #0d9488; border-bottom: 2px solid #0d9488; padding-bottom: 10px; margin-bottom: 30px;">Order Summary & Confirmation</h2>
+
+    <!-- Order Items Summary -->
+    <div style="background: #ffffff; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 1.2rem;">Items in Your Order</h3>
+        <ul style="list-style: none; padding: 0; margin: 0;">
+            {% for item in cart_details %}
+            <li style="border-bottom: 1px solid #f1f5f9; padding-bottom: 12px; margin-bottom: 12px; display: flex; justify-content: space-between;">
+                <div>
+                    <div style="font-weight: 600; color: #1e293b;">{{ item.name }}</div>
+                    <div style="color: #64748b; font-size: 0.9rem;">Qty: {{ item.qty }}</div>
+                </div>
+                <div style="font-weight: bold; color: #0d9488;">₹{{ item.total | round | int }}</div>
+            </li>
+            {% endfor %}
+        </ul>
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 1.2rem; color: #1e293b; margin-top: 20px;">
+            <span>Total Payable:</span>
+            <span>₹{{ cart_total | round | int }}</span>
+        </div>
+    </div>
+
+    <!-- Delivery Details Summary -->
+    <div style="background: #f8fafc; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin-bottom: 30px;">
+        <h3 style="margin-top: 0; color: #1e293b; font-size: 1.2rem;">Delivery Details</h3>
+        <p style="margin: 5px 0; color: #475569;"><strong>Name:</strong> {{ form_data.customer_name[0] }}</p>
+        <p style="margin: 5px 0; color: #475569;"><strong>Phone:</strong> {{ form_data.customer_phone[0] }}</p>
+        <p style="margin: 5px 0; color: #475569;"><strong>Address:</strong> {{ form_data.door_no_street[0] }}, {{ form_data.area[0] }}, {{ form_data.city[0] }} - {{ form_data.pincode[0] }}</p>
+    </div>
+
+    <!-- Hidden Form to carry data to /payment_success -->
+    <form id="final-pay-form" method="POST" action="{{ url_for('payment_success') }}">
+        <!-- Re-inject all collected data as hidden inputs -->
+        {% for key, values in form_data.items() %}
+            {% for val in values %}
+                <input type="hidden" name="{{ key }}" value="{{ val }}">
+            {% endfor %}
+        {% endfor %}
+        
+        <!-- Razorpay Hooks -->
+        <input type="hidden" name="razorpay_payment_id" id="razorpay_payment_id">
+        <input type="hidden" name="razorpay_order_id" id="razorpay_order_id">
+        <input type="hidden" name="razorpay_signature" id="razorpay_signature">
+
+        <button type="button" id="rzp-button1" style="width: 100%; background-color: #f97316; color: white; padding: 15px; border: none; border-radius: 8px; font-weight: bold; font-size: 1.2rem; cursor: pointer; text-align: center;">
+            Proceed to Pay ₹{{ cart_total | round | int }}
+        </button>
+    </form>
+</div>
+
+<!-- RAZORPAY SCRIPT -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+    var options = {
+        "key": "{{ razorpay_key_id }}", 
+        "amount": "{{ (cart_total | round | int) * 100 }}", 
+        "currency": "INR",
+        "name": "YuLiv Pharmacy",
+        "description": "Secure Order Payment",
+        "order_id": "{{ razorpay_order_id }}", 
+        "handler": function (response){
+            document.getElementById('razorpay_payment_id').value = response.razorpay_payment_id;
+            document.getElementById('razorpay_order_id').value = response.razorpay_order_id;
+            document.getElementById('razorpay_signature').value = response.razorpay_signature;
+            document.getElementById('final-pay-form').submit();
+        },
+        "theme": { "color": "#0d9488" }
+    };
+    var rzp1 = new Razorpay(options);
+    document.getElementById('rzp-button1').onclick = function(e){
+        rzp1.open();
+        e.preventDefault();
+    }
+</script>
+{% endblock %}
